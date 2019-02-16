@@ -75,7 +75,8 @@ fluidPage(
       )
       ),
       
-      plotOutput("window_selection", height = '100px'),
+      plotOutput("window_selection", height = '120px'),
+      br(), hr(),
       plotOutput("combined_graphs")
       
     )

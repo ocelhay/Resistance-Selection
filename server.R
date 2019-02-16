@@ -80,18 +80,17 @@ function(input, output) {
     return(out)
   })
   
-  # Append result of simulations to data frame
-  simul <- reactiveValues(n = 0, results = data.frame()
-  )
+  # Append result of simulations to data frame every time that there is a new simulation
+  simul <- reactiveValues(new = FALSE, results = tibble())
   
   observeEvent(simul_parasites(), {
-    simul$n <- simul$n + 1
+    simul$new <- TRUE
     simul$results <- bind_rows(simul$results,
-                               data_frame(dose = parameters$dose, 
-                                          status = ifelse (any(simul_parasites()$R > simul_parasites()$S), "Selection", "No Selection")))
+                               tibble(dose = parameters$dose, 
+                                      status = ifelse (any(simul_parasites()$R > simul_parasites()$S), "Selection", "No Selection")))
   })
   
-  
+  # A change for these parameters should triger a new graph
   observeEvent({
     input$growth
     input$ka
@@ -104,30 +103,26 @@ function(input, output) {
     input$EC50r
     input$second_inf
     input$t_secondary},{
-    simul$n <- 1
-    simul$results <- bind_rows(data.frame(),
-                               data_frame(dose = parameters$dose, 
-                                          status = ifelse (any(simul_parasites()$R > simul_parasites()$S), "Selection", "No Selection")))
-  })
+      simul$new <- FALSE
+      simul$results <- tibble()
+    },
+    ignoreInit = TRUE)
   
-  # simul_results <- reactive({
-  #   req(simul_parasites())
-  #   data_frame(dose = parameters$dose, 
-  #              status = ifelse (any(simul_parasites()$R > simul_parasites()$S), 1, 0)
-  #   )
-  # })
   
   # Output window of selection graph ==========================================
   output$window_selection <- renderPlot({
+    req(simul$new)
+    
     ggplot(data = simul$results, aes(x = dose, y = 0)) +
-      geom_point() +
-      geom_segment(aes(xend = dose, y = -0.1, yend = 0), linetype = 2) +
-      geom_label(aes(label = status, fill = status), size = 5, colour = "white", alpha = 1, show.legend = FALSE) +
-      scale_x_continuous(limits = c(0, 1100)) +
-      scale_y_continuous(limits = c(-0.1, 0.1)) +
-      scale_fill_manual(values = c('No Selection' = '#377eb8', 'Selection' = '#e41a1c')) +
-      labs(x = "Dose of Drug Administrated", y = NULL) +
+      geom_point(aes(colour = status), shape = 25, size = 2) +
+      # geom_segment(aes(xend = dose, y = -0.1, yend = 0), linetype = 2) +
+      geom_text(aes(label = status, colour = status), fontface = "bold", angle = 30, hjust = 0, vjust = -0.5, size = 5, show.legend = FALSE) +
+      scale_x_continuous(limits = c(50, 1100)) +
+      scale_y_continuous(limits = c(0, 1)) +
+      scale_colour_manual(values = c('No Selection' = '#377eb8', 'Selection' = '#e41a1c')) +
+      labs(x = "Dose (mg)", y = NULL) +
       theme_classic(base_size = 13) +
+      guides(colour = FALSE) +
       theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.border = element_blank())
   })
   
@@ -137,14 +132,16 @@ function(input, output) {
   
   # Output: selection =========================================================
   output$text_selection <- renderText({
-    if (any(simul_parasites()$R > simul_parasites()$S)) return(paste0(div(class = 'alertbox', 'Selection of Resistant Parasites')))
-    if (! any(simul_parasites()$R > simul_parasites()$S)) return(paste0(div(class = 'infobox', 'No Selection')))
+    req(simul_parasites())
+    
+    if (any(simul_parasites()$R > simul_parasites()$S)) return(paste0(p("The model predicts ", span(class = 'resistant', 'the selection of resistant parasites.'))))
+    if (! any(simul_parasites()$R > simul_parasites()$S)) return(paste0(p("The model predicts ", span(class = 'sensitive', 'no selection'))))
   })
   
   
   # Output combined graphs ====================================================
   output$combined_graphs <- renderPlot(height = 650, {
-    req(simul_concentration(), simul_parasites())
+    req(simul$results, simul_concentration(), simul_parasites())
     
     # Drug concentration ======================================================
     
@@ -165,25 +162,28 @@ function(input, output) {
                  fC_R = dose_response(k1 = parameters$k1, Ct = simul_concentration(), 
                                       EC50 = parameters$EC50r, n = parameters$n)) %>%
       ggplot(aes(x = times)) +
-      geom_line(aes(y = fC_S), col = "#377eb8") +
-      geom_line(aes(y = fC_R), col = "#e41a1c") +
+      geom_line(aes(y = fC_S), colour = "#377eb8", linetype = "dashed") +
+      geom_line(aes(y = fC_R), colour = "#e41a1c", linetype = "dashed") +
       labs(x = "Time (hours)", y = "Parasite killing rates") +
       theme_classic(base_size = 13)
     
     
     # Parasites ===============================================================
+    cols <- c('Sensitive Parasites' = '#377eb8', 'Resistant Parasites' = '#e41a1c')
     
     graph_parasites <- ggplot(data = simul_parasites(), aes(x = time)) +
-      geom_line(aes(y = log10(S)), col = '#377eb8') +
-      geom_line(aes(y = log10(R)), col = '#e41a1c') +
+      geom_line(aes(y = log10(S), colour = 'Sensitive Parasites'), size = 1.2) +
+      geom_line(aes(y = log10(R), colour = 'Resistant Parasites'), size = 1.2) +
       scale_y_continuous(limits = c(0, 13)) +
       labs(x = "Time (hours)", y = "Parasites (Log scale)") +
-      theme_minimal(base_size = 13)
+      scale_colour_manual(name = NULL, values = cols) +
+      theme_classic(base_size = 14) +
+      theme(legend.text = element_text(size = 13), legend.position = 'top')
     
     
     # Combined graphs
-    graph_concentration + graph_dose_response + graph_parasites + 
-      plot_layout(ncol = 1, height = c(2, 2, 4))
+    graph_parasites + graph_concentration + graph_dose_response +
+      plot_layout(ncol = 1, height = c(4, 2, 2))
   })
 }
 )
