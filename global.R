@@ -3,6 +3,7 @@
 library(deSolve)
 library(ggplot2)
 library(patchwork)
+library(shinyWidgets)
 library(tidyverse)
 
 library(shiny)
@@ -11,7 +12,8 @@ library(shiny)
 source("www/models.R", local = TRUE)
 
 # Parameters for the model
-init_param <- list(growth = 8/48,
+init_param <- list(growth_s = 8,
+                   growth_r = 6,
                    dose = 500,
                    ka = 100,
                    Fa = 0.8,
@@ -19,8 +21,8 @@ init_param <- list(growth = 8/48,
                    CL = 0.4,
                    k1 = -1,
                    n = 1,
-                   EC50s = 10,
-                   EC50r = 50,
+                   EC50_s = 10,
+                   EC50_r = 50,
                    second_inf = FALSE,
                    t_secondary = 100)
 
@@ -28,4 +30,4 @@ init_param <- list(growth = 8/48,
 state <- c(S = 10^12, R = 10^5)
 
 # Times
-times <- c(seq(0, 1.99, by = 0.01), 2:150)
+times <- c(seq(0, 1.99, by = 0.01), 2:180)

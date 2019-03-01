@@ -9,7 +9,7 @@
 /* Red fill and white text */
 .alertbox {
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 3px;
   background-color: #e41a1c;
   color: white;
   margin-bottom: 5px;
@@ -21,4 +21,10 @@
   background-color: #377eb8; 
   color: white;
   margin-bottom: 5px;
+}
+
+/* link with a less aggressive blue color */
+.infolink {
+    color: #377eb8;
+    text-decoration: underline;
 }
