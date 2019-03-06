@@ -3,10 +3,13 @@
 library(deSolve)
 library(ggplot2)
 library(patchwork)
+library(scales)
 library(shinyWidgets)
 library(tidyverse)
-
 library(shiny)
+
+# enable bookmarking
+enableBookmarking(store = "url")
 
 # load the models
 source("www/models.R", local = TRUE)
@@ -24,10 +27,14 @@ init_param <- list(growth_s = 8,
                    EC50_s = 10,
                    EC50_r = 50,
                    second_inf = FALSE,
-                   t_secondary = 100)
+                   t_secondary = 120)
 
 # Initial conditions of the ODE
 state <- c(S = 10^12, R = 10^5)
 
 # Times
-times <- c(seq(0, 1.99, by = 0.01), 2:180)
+times <- c(seq(0, 1.99, by = 0.01), 2:240)
+
+
+# Colors
+cols <- c('Sensitive Parasites' = '#377eb8', 'Resistant Parasites' = '#e41a1c')
