@@ -1,6 +1,7 @@
 # Shiny web application to showcase the mechanism of resistance selection =====
 
 library(deSolve)
+library(ggforce)
 library(ggplot2)
 library(patchwork)
 library(scales)
@@ -15,7 +16,9 @@ enableBookmarking(store = "url")
 source("www/models.R", local = TRUE)
 
 # Parameters for the model
-init_param <- list(growth_s = 8,
+init_param <- list(time_resistant = 0,
+                   nb_resistant = 100000,
+                   growth_s = 8,
                    growth_r = 6,
                    dose = 500,
                    ka = 100,
@@ -29,12 +32,9 @@ init_param <- list(growth_s = 8,
                    second_inf = FALSE,
                    t_secondary = 120)
 
-# Initial conditions of the ODE
-state <- c(S = 10^12, R = 10^5)
-
 # Times
-times <- c(seq(0, 1.99, by = 0.01), 2:240)
-
+# times <- c(seq(0, 1.99, by = 0.01), 2:240)
 
 # Colors
-cols <- c('Sensitive Parasites' = '#377eb8', 'Resistant Parasites' = '#e41a1c')
+cols <- c('Sensitive Parasites' = '#377eb8', 
+          'Resistant Parasites' = '#e41a1c')

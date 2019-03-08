@@ -17,7 +17,7 @@ fluidPage(
          });
          })
          </script>')
-    ),
+  ),
   
   # Add window title
   titlePanel(title = NULL, windowTitle = "Resistance Selection"),
@@ -33,7 +33,7 @@ fluidPage(
       )),
       
       h4(icon("arrow-right"), "Drug Pharmacokinetic Characteristics"),
-
+      
       fluidRow(
         column(width = 6,
                span("Absorption parameter", sliderInput("ka", NULL, min = 0, max = 10, value = init_param$ka))
@@ -59,7 +59,7 @@ fluidPage(
                      
                      fluidRow(
                        column(width = 12,
-
+                              
                               HTML("The concentration of the drug is: <br><br>
 $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-\\exp{(-k_{a}.t)} \\Big]$"),
                               HTML('with:'),
@@ -74,36 +74,40 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
                               
                               htmlOutput("half_life")
                        ))
-                     ),
-
+      ),
+      
       
       hr(),
       h4(icon("arrow-right"), "Parasites Attributes"),
       fluidRow(
         column(width = 6,
-               span(div(class = "sensitive", 'Multiplication rate for sensitive (per 48h cycle)'), sliderInput("growth_s", NULL, min = 0, max = 10, value = init_param$growth_s))
+               span(div(class = "resistant", 'Time of introduction of resistants (hours since start treatment)'), sliderInput("time_resistant", NULL, min = 0, max = 192, step = 12, value = init_param$t_resistant))
+        ),
+        column(width = 6,
+               span(div(class = "resistant", 'Number of resistants parasites'), selectInput('nb_resistant', NULL, choices = c(1, 10, 100, 1000, 10000, 100000), selected = 100000, width = '50%'))
+        )
+      ),
+      fluidRow(
+        column(width = 6,
+               span(div(class = "resistant", "EC50 for resistant"), sliderInput("EC50_r", NULL, min = 0, max = 100, value = init_param$EC50_r))
+               
         ),
         column(width = 6,
                span(div(class = "resistant", 'Multiplication rate for resistant (per 48h cycle)'), sliderInput("growth_r", NULL, min = 0, max = 10, value = init_param$growth_r))
         )
       ),
       fluidRow(
-        column(width = 12,
-               htmlOutput('message_rate')
-        )
-      ),
-      
-      fluidRow(
         column(width = 6,
                span(div(class = "sensitive", "EC50 for sensitive"), sliderInput("EC50_s", NULL, min = 0, max = 100, value = init_param$EC50_s))
         ),
         column(width = 6,
-               span(div(class = "resistant", "EC50 for resistant"), sliderInput("EC50_r", NULL, min = 0, max = 100, value = init_param$EC50_r))
+               span(div(class = "sensitive", 'Multiplication rate for sensitive (per 48h cycle)'), sliderInput("growth_s", NULL, min = 0, max = 10, value = init_param$growth_s))
         )
       ),
       fluidRow(
         column(width = 12,
-               htmlOutput('message_EC50')
+               htmlOutput('message_EC50'),
+               htmlOutput('message_rate')
         )
       ),
       
@@ -115,17 +119,17 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
                               span("Slope of the concentration-effect curve: "), numericInput("n", NULL, min = -10, max = 10, value = init_param$n, width = "80px")
                        )
                      )
-                     ),
-                     hr(),
-                     h4(icon("arrow-right"), "Secondary Infection"),
-                     checkboxInput(inputId = "second_inf",label = "Simulate secondary infection", value = FALSE),
-                     conditionalPanel("input.second_inf", 
-                                      span("Time of secondary infection (hours after drug administration):",
-                                           sliderInput("t_secondary", NULL, min = 24, max = 192, step = 12, value = init_param$t_secondary, width = '50%')
-                                      )
-                     ),
-      bookmarkButton()
       ),
+      hr(),
+      h4(icon("arrow-right"), "Secondary Infection"),
+      checkboxInput(inputId = "second_inf",label = "Simulate secondary infection", value = FALSE),
+      conditionalPanel("input.second_inf", 
+                       span("Time of secondary infection (hours after drug administration):",
+                            sliderInput("t_secondary", NULL, min = 24, max = 192, step = 12, value = init_param$t_secondary, width = '50%')
+                       )
+      ),
+      bookmarkButton()
+    ),
     
     # Show a plot of the generated distribution
     mainPanel(
@@ -141,8 +145,8 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
       # )),
       htmlOutput('conc_growth_r'),
       htmlOutput('conc_growth_s'),
-      numericInput('limit_y_concentration', 'Drug concentration y-axis upper limit', value = 1000),
-      plotOutput("combined_graphs", height = "1200px")
+      checkboxInput('zoom_y', 'Zoom into y-axis', value = FALSE),
+      plotOutput("combined_graphs", height = "800px")
       
     )
   )
