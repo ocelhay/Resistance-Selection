@@ -41,8 +41,10 @@ function(input, output) {
   # Simulate drug concentration over time =====================================
 
   simul_concentration <- reactive({
-    drug_concentration(dose = parameters$dose, ka = parameters$ka, Fa = parameters$Fa, V = parameters$V, 
+    tibble(times = c(seq(0, 1.99, by = 0.01), 2:240),
+           Ct = drug_concentration(dose = parameters$dose, ka = parameters$ka, Fa = parameters$Fa, V = parameters$V, 
                        CL = parameters$CL, t = c(seq(0, 1.99, by = 0.01), 2:240))
+    )
   })
   
   
@@ -100,12 +102,17 @@ function(input, output) {
     # Secondary infection =====================================================
     if (parameters$second_inf) {
       
+      out <- tibble(
+        time = times,
+        S = rep(0, length(times)), 
+        R = rep(0, length(times)))
+      
       # Sensitive
-      times_pre <- times[times < parameters$t_secondary]
-      times_post <- times[times >= parameters$t_secondary]
+      times_pre <- times < parameters$t_secondary
+      times_post <- times >= parameters$t_secondary
       
       out$S[times_pre] <- ode(y = c(P = 10^12), 
-                   times = times_pre, 
+                   times = times[times_pre], 
                    func = parasite_function, 
                    parms = list_parameters,
                    type = 'S') %>%
@@ -113,7 +120,7 @@ function(input, output) {
         pull(P)
       
       out$S[times_post] <- ode(y = c(P = last(out$S[times_pre]) + 10^12), 
-                              times = times_post, 
+                              times = times[times_post], 
                               func = parasite_function, 
                               parms = list_parameters,
                               type = 'S') %>%
@@ -121,19 +128,19 @@ function(input, output) {
         pull(P)
       
       # Resistant
-      times_pre <- times[times >= time_resistant & times < parameters$t_secondary]
-      times_post <- times[times >= parameters$t_secondary]
+      times_pre <- times >= input$time_resistant & times < parameters$t_secondary
+      times_post <- times >= parameters$t_secondary
       
-      out$S[times_pre] <- ode(y = c(P = parameters$nb_resistant), 
-                              times = times_pre, 
+      out$R[times_pre] <- ode(y = c(P = parameters$nb_resistant), 
+                              times = times[times_pre], 
                               func = parasite_function, 
                               parms = list_parameters,
                               type = 'R') %>%
         as.tibble() %>%
         pull(P)
       
-      out$S[times_post] <- ode(y = c(P = last(out$R[times_pre]) + 10^5), 
-                               times = times_post, 
+      out$R[times_post] <- ode(y = c(P = last(out$R[times_pre]) + 10^5), 
+                               times = times[times_post], 
                                func = parasite_function, 
                                parms = list_parameters,
                                type = 'R') %>%
@@ -156,14 +163,14 @@ function(input, output) {
     mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
     
     out <- out %>%
-      mutate(Ct = simul_concentration()[c(1, 101, 201:439)],
+      mutate(Ct = simul_concentration()$Ct[c(1, 101, 201:439)],
       # mutate(Ct = (list_parameters$dose * list_parameters$ka * list_parameters$Fa)/(list_parameters$V * list_parameters$ka - list_parameters$CL) * ( exp(-list_parameters$CL / list_parameters$V * times) - exp(-list_parameters$ka * times)),
              dS = c(0, diff(S)),
              dR = c(0, diff(R))) %>%
       mutate(prop_R = round(100* R / (R + S), 1),
-             growth_S = (dS > 0),
-             growth_R = (dR > 0),
-             growth_RsupS = (dR > dS),
+             # growth_S = (dS > 0),
+             # growth_R = (dR > 0),
+             # growth_RsupS = (dR > dS),
              msw = (Ct >= mic & Ct <= mpc),
              msw_open = c(0, diff(msw)) == 1,
              msw_close = c(0, diff(msw)) == -1)
@@ -223,24 +230,50 @@ function(input, output) {
   
   
   # Output half-life =======================================================
-  output$half_life <- renderText(paste0("Based on provided parameters values, the half-life is ", round(0.693 * parameters$V / parameters$CL, 2), ' hours.'))
+  output$half_life <- renderText(paste0("The half-life of the drug is ", round(log(2) * parameters$V / parameters$CL, 2), ' hours.'))
   
-  # Concentration at which we seee a growth of R
+  # MPC, Concentration at which we seee a growth of R
   output$conc_growth_r <- renderText({
     adj_growth_r <- log(input$growth_r)/48
     conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
     print(conc_start_growth_r)
-    paste0("MPC: Based on parasites attributes (EC50r...), resistant parasites will grow if the drug concentration is less than ", round(conc_start_growth_r, 2), ' mg/L')
+    paste0("Mutant Prevention Concentration (MPC) — resistant parasites will grow if the drug concentration is less than ", round(conc_start_growth_r, 2), ' mg/L')
   })
   
-  # Concentration at which we seee a growth of S
+  # Time MPC
+  output$time_mpc <- renderText({
+    t_open <- (simul_parasites()$time[simul_parasites()$msw_open == TRUE])/24
+    return(paste0('The MPC is reached at time ', round(t_open, 2), ' days'))
+  })
+  
+  # MIC, Concentration at which we seee a growth of S
   output$conc_growth_s <- renderText({
     adj_growth_s <- log(input$growth_s)/48
     conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
     print(conc_start_growth_s)
-    paste0("MIC: Based on parasites attributes (EC50s...), sensitive parasites will grow if the drug concentration is less than ", round(conc_start_growth_s, 2), ' mg/L')
+    paste0("Minimum Inhibitory Concentration (MIC) — sensitive parasites will grow if the drug concentration is less than ", round(conc_start_growth_s, 2), ' mg/L')
   })
   
+  # Time MIC
+  output$time_mic <- renderText({
+    t_close <- (simul_parasites()$time[simul_parasites()$msw_close == TRUE])/24
+    return(paste0('The MIC is reached at time ', round(t_close, 2), ' days'))
+  })
+  
+  # Duration MSW
+  output$duration_msw <- renderText({
+    t_open <- (simul_parasites()$time[simul_parasites()$msw_open == TRUE])/24
+    t_close <- (simul_parasites()$time[simul_parasites()$msw_close == TRUE])/24
+    return(paste0('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.'))
+  })
+  
+  # Total time for which R >= 0.1*S
+  output$danger_time <- renderText({
+  danger_days <- round(10*sum(simul_parasites()$prop_R > 0.1) / 240, 1)
+  paste0("For ", danger_days, " days, the ratio R on S is above 10%")
+  })
+    
+    
   
   # Messages warning user of odd parameter choice ==========================
   output$message_rate <- renderText({
@@ -268,36 +301,36 @@ function(input, output) {
     
     # Graph concentration
     if(input$zoom_y == FALSE){
-      graph_concentration <- data.frame(t = times, Ct = simul_concentration()) %>%
-      ggplot(aes(x = t / 24, y = Ct)) +
-      geom_line(size = 1, colour = "grey") +
-      scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-      geom_hline(yintercept = conc_start_growth_s, lty = 4, col = '#8e44ad') +
-      geom_label(x = 0, y = conc_start_growth_s, label = 'MIC', col = '#8e44ad') +
-      geom_hline(yintercept = conc_start_growth_r, lty = 4, col = '#8e44ad') +
-      geom_label(x = 0, y = conc_start_growth_r, label = 'MPC', col = '#8e44ad') +
-      geom_vline(xintercept = t_open) +
-      geom_vline(xintercept = t_close) +
-      labs(x = "Time (days)", y = "Drug concentration (mg/L)") +
-      theme_minimal(base_size = 14)
+      graph_concentration <- simul_concentration() %>%
+        ggplot(aes(x = times / 24, y = Ct)) +
+        geom_line(size = 1, colour = "grey") +
+        scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
+        geom_hline(yintercept = conc_start_growth_s, lty = 4, col = '#8e44ad') +
+        geom_label(x = 0, y = conc_start_growth_s, label = 'MIC', col = '#8e44ad') +
+        geom_hline(yintercept = conc_start_growth_r, lty = 4, col = '#8e44ad') +
+        geom_label(x = 0, y = conc_start_growth_r, label = 'MPC', col = '#8e44ad') +
+        geom_vline(xintercept = t_open) +
+        geom_vline(xintercept = t_close) +
+        labs(x = "Time (days)", y = "Drug concentration (mg/L)") +
+        theme_minimal(base_size = 14)
     }
 
     if(input$zoom_y ==  TRUE){
       print(max(conc_start_growth_r, conc_start_growth_s))
       
-      graph_concentration <- data.frame(t = times, Ct = simul_concentration()) %>%
-      ggplot(aes(x = t / 24, y = Ct)) +
-      geom_line(size = 1, colour = "grey") +
-      scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-      geom_hline(yintercept = conc_start_growth_s, lty = 4, col = '#8e44ad') +
-      geom_label(x = 0, y = conc_start_growth_s, label = 'MIC', col = '#8e44ad') +
-      geom_hline(yintercept = conc_start_growth_r, lty = 4, col = '#8e44ad') +
-      geom_label(x = 0, y = conc_start_growth_r, label = 'MPC', col = '#8e44ad') +
+      graph_concentration <- simul_concentration() %>%
+        ggplot(aes(x = times / 24, y = Ct)) +
+        geom_line(size = 1, colour = "grey") +
+        scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
+        geom_hline(yintercept = conc_start_growth_s, lty = 4, col = '#8e44ad') +
+        geom_label(x = 0, y = conc_start_growth_s, label = 'MIC', col = '#8e44ad') +
+        geom_hline(yintercept = conc_start_growth_r, lty = 4, col = '#8e44ad') +
+        geom_label(x = 0, y = conc_start_growth_r, label = 'MPC', col = '#8e44ad') +
         geom_vline(xintercept = t_open) +
         geom_vline(xintercept = t_close) +
-      labs(x = "Time (days)", y = "Drug concentration (mg/L)") +
-      theme_minimal(base_size = 14) + 
-      facet_zoom(y = (Ct < 1.5 * max(conc_start_growth_r, conc_start_growth_s)), horizontal = TRUE)
+        labs(x = "Time (days)", y = "Drug concentration (mg/L)") +
+        theme_minimal(base_size = 14) + 
+        facet_zoom(y = (Ct < 1.5 * max(conc_start_growth_r, conc_start_growth_s)), horizontal = TRUE)
     }
     
     
@@ -319,7 +352,7 @@ function(input, output) {
       scale_y_continuous(limits = c(0, 100)) +
       geom_line(aes(y = prop_R), size = 1.2) +
       geom_hline(yintercept = 10, lty = 2) +
-      labs(x = "Time (days)", y = "Proportion of resistant on total parasites (%)") +
+      labs(x = "Time (days)", y = "Proportion of resistant \n on total parasites (%)") +
       theme_minimal(base_size = 14)
     
     

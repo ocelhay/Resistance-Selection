@@ -36,7 +36,7 @@ fluidPage(
       
       fluidRow(
         column(width = 6,
-               span("Absorption parameter", sliderInput("ka", NULL, min = 0, max = 10, value = init_param$ka))
+               span("Absorption parameter", sliderInput("ka", NULL, min = 0, max = 100, value = init_param$ka))
         ),
         column(width = 6,
                span("Bioavailability", sliderInput("Fa", NULL, min = 0, max = 1, value = init_param$Fa))
@@ -44,7 +44,7 @@ fluidPage(
       ),
       fluidRow(
         column(width = 6,
-               span("Volume of drug in blood", sliderInput("V", NULL, min = 4, max = 20, value = init_param$V))
+               span("Volume of distribution", sliderInput("V", NULL, min = 4, max = 20, value = init_param$V))
         ),
         column(width = 6,
                span("Clearance rate", sliderInput("CL", NULL, min = 0.1, max = 1, value = init_param$CL))
@@ -70,9 +70,7 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
                               br(),
                               
                               span("The drug half life is given by the formula:
-                                $t_{1/2} = \\frac{0.693.V}{CL}$"),
-                              
-                              htmlOutput("half_life")
+                                $t_{1/2} = \\frac{0.693.V}{CL}$")
                        ))
       ),
       
@@ -143,11 +141,20 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
       # fluidRow(column(width = 5,
       #                 plotOutput("window_selection", height = '120px')
       # )),
+      htmlOutput("half_life"),
+      hr(),
       htmlOutput('conc_growth_r'),
+      htmlOutput('time_mpc'),
       htmlOutput('conc_growth_s'),
-      checkboxInput('zoom_y', 'Zoom into y-axis', value = FALSE),
-      plotOutput("combined_graphs", height = "800px")
+      htmlOutput('time_mic'),
       
+      htmlOutput('duration_msw'),
+      
+      hr(),
+      checkboxInput('zoom_y', 'Focus on Mutant Selection Window (between MPC and MIC)', value = FALSE, width = '100%'),
+      plotOutput("combined_graphs", height = "800px") %>% 
+        withSpinner(),
+      htmlOutput("danger_time")
     )
   )
 )
