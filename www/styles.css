@@ -1,10 +1,15 @@
 .resistant {
     color: #e41a1c;
+    text-align: center; 
+    border-top: 3px solid #e41a1c; 
 }
 
 .sensitive {
     color: #377eb8;
+    text-align: center; 
+    border-top: 3px solid #377eb8; 
 }
+
 
 /* Red fill and white text */
 .alertbox {
@@ -27,4 +32,9 @@
 .infolink {
     color: #377eb8;
     text-decoration: underline;
+}
+
+/* for slider labels */
+.lab {
+  text-align: right;
 }

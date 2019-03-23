@@ -1,6 +1,9 @@
 # Parameters for the model
 init_param <- list(time_resistant = 0,
-                   nb_resistant = 100000,
+                   nb_resistant_t0 = 10^5,
+                   nb_sensitive_t0 = 10^12,
+                   nb_resistant_sec = 0,
+                   nb_sensitive_sec = 0,
                    growth_s = 8,
                    growth_r = 6,
                    dose = 500,

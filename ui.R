@@ -19,87 +19,104 @@ fluidPage(
          </script>')
   ),
   
-  # Add window title
+  # Add window title ----
   titlePanel(title = NULL, windowTitle = "Resistance Selection"),
   
   
-  # Sidebar with a slider input for number of bins 
+  # Sidebar with inputs ----
   sidebarLayout(
     sidebarPanel(
       
-      h4(icon("tablets"), "Amount of Drug Administered (mg)"),
+      h4(icon("tablets"), "Amount of Drug Administered"),
       fluidRow(column(width = 12,
-                      sliderInput("dose", label = NULL, min = 0, max = 1000, value = init_param$dose)
+                      noUiSliderInput("dose", label = NULL, min = 0, max = 1000, step = 50, update_on = 'end',
+                                      value = init_param$dose, format = wNumbFormat(decimals = 0, suffix = 'mg'), height = '15px')
       )),
+      hr(),
       
-      h4(icon("arrow-right"), "Drug Pharmacokinetic Characteristics"),
+      h4(icon("flask"), "Pharmacokinetic Characteristics"),
       
       fluidRow(
         column(width = 6,
-               span("Absorption parameter", sliderInput("ka", NULL, min = 0, max = 100, value = init_param$ka))
+               span("Absorption Parameter", sliderInput("ka", NULL, min = 0, max = 100, step = 5, ticks = FALSE,
+                                                        post = ' %', value = init_param$ka))
         ),
         column(width = 6,
-               span("Bioavailability", sliderInput("Fa", NULL, min = 0, max = 1, value = init_param$Fa))
+               span("Bioavailability", sliderInput("Fa", NULL, min = 0, max = 1, step = 0.05, ticks = FALSE, 
+                                                   value = init_param$Fa))
         )
       ),
       fluidRow(
         column(width = 6,
-               span("Volume of distribution", sliderInput("V", NULL, min = 4, max = 20, value = init_param$V))
+               span("Volume of Distribution", sliderInput("V", NULL, min = 4, max = 20, step = 1, ticks = FALSE, 
+                                                          post = ' l.', value = init_param$V))
         ),
         column(width = 6,
-               span("Clearance rate", sliderInput("CL", NULL, min = 0.1, max = 1, value = init_param$CL))
+               span("Clearance Rate", sliderInput("CL", NULL, min = 0.1, max = 1, ticks = FALSE,
+                                                  post = ' l/h', value = init_param$CL))
         )
       ),
       
-      
-      
-      
-      
-      dropdownButton(label = "About these parameters", circle = FALSE, status = "primary", icon = icon("info"), width = "500px", tooltip = FALSE, right = FALSE,
-                     
-                     fluidRow(
-                       column(width = 12,
-                              
-                              HTML("The concentration of the drug is: <br><br>
-$C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-\\exp{(-k_{a}.t)} \\Big]$"),
-                              HTML('with:'),
-                              HTML("<ul><li>$k_{a}$: Absortion parameter (per hour)</li>
-<li>$F_{a}$: Bioavailability (fraction)</li>
-                                   <li>$V$: Volume of drug in blood (liters)</li>
-                                   <li>$CL$: Clearance rate (liters per hour)</li></ul>"),
-                              br(),
-                              
-                              span("The drug half life is given by the formula:
-                                $t_{1/2} = \\frac{0.693.V}{CL}$")
-                       ))
-      ),
+      htmlOutput("half_life"),
       
       
       hr(),
-      h4(icon("arrow-right"), "Parasites Attributes"),
+      h4(icon('caret-right'), "Parasites Load"),
       fluidRow(
         column(width = 6,
-               span(div(class = "resistant", 'Time of introduction of resistants (hours since start treatment)'), sliderInput("time_resistant", NULL, min = 0, max = 192, step = 12, value = init_param$t_resistant))
+               div(class = "resistant", "Resistant Parasites")
         ),
         column(width = 6,
-               span(div(class = "resistant", 'Number of resistants parasites'), selectInput('nb_resistant', NULL, choices = c(1, 10, 100, 1000, 10000, 100000), selected = 100000, width = '50%'))
+               div(class = "sensitive", "Sensitive Parasites")
+        )
+      ),
+      p("At Drug Admininstration (t = 0)"),
+      fluidRow(
+        column(6, selectInput('nb_resistant_t0', NULL, choices = c(0, 100000), selected = 100000, width = '50%')),
+        column(6, selectInput('nb_sensitive_t0', NULL, choices = c(0, 1000000000000), selected = 1000000000000, width = '50%'))
+      ),
+      checkboxInput(inputId = "second_inf",label = "Add a Secondary Infection", value = FALSE),
+      
+      conditionalPanel("input.second_inf",
+                       p('Time of introduction of resistants (hours since start of treatment)'),
+                       noUiSliderInput("t_secondary", label = NULL, min = 12, max = 192, step = 12, update_on = 'end',
+                                       value = init_param$t_secondary, format = wNumbFormat(decimals = 0, suffix = ' h'), height = '15px')
+      ),
+      
+      fluidRow(
+        column(6, conditionalPanel("input.second_inf", selectInput('nb_resistant_sec', NULL, choices = c(1, 100000), selected = 1, width = '50%'))),
+        column(6, conditionalPanel("input.second_inf", selectInput('nb_sensitive_sec', NULL, choices = c(1, 1000000000), selected = 1, width = '50%')))
+      ),
+      
+      hr(),
+      h4(icon('caret-right'), "Parasites Attributes"),
+      fluidRow(
+        column(width = 6,
+               div(class = "resistant", "Resistant Parasites")
+        ),
+        column(width = 6,
+               div(class = "sensitive", "Sensitive Parasites")
         )
       ),
       fluidRow(
         column(width = 6,
-               span(div(class = "resistant", "EC50 for resistant"), sliderInput("EC50_r", NULL, min = 0, max = 100, value = init_param$EC50_r))
+               span("EC50", sliderInput("EC50_r", NULL, min = 0, max = 100, value = init_param$EC50_r))
                
         ),
         column(width = 6,
-               span(div(class = "resistant", 'Multiplication rate for resistant (per 48h cycle)'), sliderInput("growth_r", NULL, min = 0, max = 10, value = init_param$growth_r))
+               span("EC50", sliderInput("EC50_s", NULL, min = 0, max = 100, value = init_param$EC50_s))
         )
       ),
       fluidRow(
         column(width = 6,
-               span(div(class = "sensitive", "EC50 for sensitive"), sliderInput("EC50_s", NULL, min = 0, max = 100, value = init_param$EC50_s))
+               span('Multiplication Rate (per 48h cycle)', 
+                    sliderInput("growth_r", NULL, min = 0, max = 10, value = init_param$growth_r))
+               
         ),
         column(width = 6,
-               span(div(class = "sensitive", 'Multiplication rate for sensitive (per 48h cycle)'), sliderInput("growth_s", NULL, min = 0, max = 10, value = init_param$growth_s))
+               span('Multiplication Rate (per 48h cycle)', 
+                    sliderInput("growth_s", NULL, min = 0, max = 10, value = init_param$growth_s))
+               
         )
       ),
       fluidRow(
@@ -118,19 +135,30 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
                        )
                      )
       ),
-      hr(),
-      h4(icon("arrow-right"), "Secondary Infection"),
-      checkboxInput(inputId = "second_inf",label = "Simulate secondary infection", value = FALSE),
-      conditionalPanel("input.second_inf", 
-                       span("Time of secondary infection (hours after drug administration):",
-                            sliderInput("t_secondary", NULL, min = 24, max = 192, step = 12, value = init_param$t_secondary, width = '50%')
-                       )
-      ),
       bookmarkButton()
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
+      dropdownButton(label = "About these parameters", circle = FALSE, status = "primary", icon = icon("info"), width = "500px", tooltip = FALSE, right = FALSE,
+                     
+                     fluidRow(
+                       column(width = 12,
+                              
+                              HTML("The concentration of the drug is: <br><br>
+                                   $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-\\exp{(-k_{a}.t)} \\Big]$"),
+                              HTML('with:'),
+                              HTML("<ul><li>$k_{a}$: Absortion parameter (per hour)</li>
+                                   <li>$F_{a}$: Bioavailability (fraction)</li>
+                                   <li>$V$: Volume of drug in blood (liters)</li>
+                                   <li>$CL$: Clearance rate (liters per hour)</li></ul>"),
+                              br(),
+                              
+                              span("The drug half life is given by the formula:
+                                   $t_{1/2} = \\frac{0.693.V}{CL}$")
+                       ))
+      ),
+      
       # column(width = 6,
       #        br(),
       #        p('The window opens when the usually single parasite resistant de novo, which emerges from the liver, and its progeny can survive and grow; i.e., the blood concentrations have fallen to or below the MIC for this level of resistance.'),
@@ -141,18 +169,15 @@ $C(t) = \\frac{dose.k_{a}.F_{a}}{V.k_{a} - CL} \\Big[ \\exp{(-\\frac{CL}{V}.t)}-
       # fluidRow(column(width = 5,
       #                 plotOutput("window_selection", height = '120px')
       # )),
-      htmlOutput("half_life"),
-      hr(),
-      htmlOutput('conc_growth_r'),
-      htmlOutput('time_mpc'),
-      htmlOutput('conc_growth_s'),
-      htmlOutput('time_mic'),
-      
-      htmlOutput('duration_msw'),
+      htmlOutput('msw'),
       
       hr(),
       checkboxInput('zoom_y', 'Focus on Mutant Selection Window (between MPC and MIC)', value = FALSE, width = '100%'),
-      plotOutput("combined_graphs", height = "800px") %>% 
+      plotOutput("plot_1", height = "300px") %>% 
+        withSpinner(),
+      plotOutput("plot_2", height = "300px") %>% 
+        withSpinner(),
+      plotOutput("plot_3", height = "200px") %>% 
         withSpinner(),
       htmlOutput("danger_time")
     )
