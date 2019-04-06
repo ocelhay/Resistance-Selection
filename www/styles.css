@@ -1,3 +1,119 @@
+/* Sidebar */
+.well2 {
+    min-height: 20px;
+    padding-left: 19px;
+    padding-right: 19px;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    border-left: 1px solid #e3e3e3;
+    border-right: 1px solid #e3e3e3;
+    border-bottom: 1px solid #e3e3e3;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+
+/* Summary statistics */
+.tab-pane {
+  background-color: #f5f5f5;
+}
+
+
+/* for slider labels: sl if the slider is on one single line and dl for double line */
+
+.sl {
+  margin-top: 17px;
+  text-align: center;
+}
+
+.dl {
+  margin-top: 13px;
+  text-align: center;
+}
+
+.tl {
+  margin-top: 9px;
+  text-align: center;
+}
+
+
+/* Floating total costs */
+@keyframes example {
+  0%   {
+    color: yellow;
+  }
+  100% {
+    color: black;
+  }
+}
+
+.half-life {
+  padding: 4px;
+  animation-name: example;
+  animation-duration: 5s;
+}
+
+.mic {
+  padding-right: 4px;
+  border-top: 5px dashed #377eb8;
+  border-right: 5px dashed #377eb8;
+  color: #377eb8;
+  animation-name: anim_mic;
+  animation-duration: 5s;
+}
+
+.mic2 {
+  padding-right: 4px;
+  border-right: 5px dashed #377eb8;
+  border-bottom: 5px dashed #377eb8;
+  color: #377eb8;
+  animation-name: anim_mic;
+  animation-duration: 5s;
+}
+
+@keyframes anim_mic {
+  0%   {
+    color: yellow;
+    border-color: yellow;
+  }
+  100% {
+    color: #377eb8;
+    border-color: #377eb8;
+  }
+}
+
+.mpc {
+  padding-left: 4px;
+  border-left: 5px dashed #e41a1c;
+  border-bottom: 5px dashed #e41a1c;
+  color: #e41a1c;
+  animation-name: anim_mpc;
+  animation-duration: 5s;
+}
+
+.mpc2 {
+  padding-left: 4px;
+  border-left: 5px dashed #e41a1c;
+  border-top: 5px dashed #e41a1c;
+  color: #e41a1c;
+  animation-name: anim_mpc;
+  animation-duration: 5s;
+}
+
+@keyframes anim_mpc {
+  0%   {
+    color: yellow;
+    border-color: yellow;
+  }
+  100% {
+    color: #e41a1c;
+    border-color: #e41a1c;
+  }
+}
+
+
+
 .resistant {
     color: #e41a1c;
     text-align: center; 
@@ -10,14 +126,8 @@
     border-top: 3px solid #377eb8; 
 }
 
-
-/* Red fill and white text */
 .alertbox {
-  padding: 10px;
-  border-radius: 3px;
-  background-color: #e41a1c;
-  color: white;
-  margin-bottom: 5px;
+  color: #e41a1c;
 }
 
 .infobox { /* Blue fill and white text */
@@ -37,4 +147,10 @@
 /* for slider labels */
 .lab {
   text-align: right;
+}
+
+.logo {
+  margin-top: 15px;
+  margin-right: 25px;
+  margin-bottom: 25px;
 }

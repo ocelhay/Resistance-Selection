@@ -1,5 +1,6 @@
 
 # load packages
+library(bsplus)
 library(deSolve)
 library(ggforce)
 library(ggplot2)
@@ -17,10 +18,33 @@ enableBookmarking(store = "url")
 source("www/models.R", local = TRUE)
 
 # list of initial parameters
-source("www/init_parameters.R", local = TRUE)
+# source("www/init_parameters.R", local = TRUE)
 
 
 
 # Colors
 cols <- c('Sensitive Parasites' = '#377eb8', 
           'Resistant Parasites' = '#e41a1c')
+
+
+# Modifictaion of inputs to have the labels on the left
+sliderInputSplit <- function (label, l = 5, class = 'sl',...) {
+  fluidRow(
+    column(l, div(class = class, label)),
+    column((12 - l), sliderInput(label = NULL,...))
+  )
+}
+
+numericInputSplit <- function (label, l = 5, class = 'sl', ...) {
+  fluidRow(
+    column(l, div(class = class, label)),
+    column((12 - l), numericInput(label = NULL,...))
+  )
+}
+
+selectInputSplit <- function (label, l = 5, class = 'sl', ...) {
+  fluidRow(
+    column(l, div(class = class, label)),
+    column((12 - l), selectInput(label = NULL,...))
+  )
+}
