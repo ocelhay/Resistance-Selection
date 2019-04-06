@@ -1,10 +1,8 @@
 
 # load packages
-library(bsplus)
 library(deSolve)
 library(ggforce)
 library(ggplot2)
-library(patchwork)
 library(scales)
 library(shinycssloaders)
 library(shinyWidgets)

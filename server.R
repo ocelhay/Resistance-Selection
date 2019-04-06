@@ -270,15 +270,20 @@ shinyServer(
     output$plot_1 <- renderPlot({
 
       # Elements for lines
-      adj_growth_s <- log(input$growth_s)/48
-      conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
-      t_open <- (simul$simul_parasites$time[simul$simul_parasites$msw_open == TRUE])/24
-      t_close <- (simul$simul_parasites$time[simul$simul_parasites$msw_close == TRUE])/24
+      mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
+      msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
+      t_open <- (simul_concentration()$times[msw_open == TRUE])/24
       
+      adj_growth_s <- log(input$growth_s)/48
+      conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
+      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
+      msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      t_close <- (simul_concentration()$times[msw_close == TRUE])/24
       
-      print(max(conc_start_growth_r, conc_start_growth_s))
+      print(paste0("t_open = ", t_open))
+      
       
       graph_concentration <- simul_concentration() %>%
         ggplot(aes(x = times / 24, y = Ct)) +
@@ -292,23 +297,27 @@ shinyServer(
         labs(x = "Time (days)", y = 'Concentration', title = "Drug concentration (mg/L)") +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')
-      # facet_zoom(y = (Ct < 1.5 * max(conc_start_growth_r, conc_start_growth_s)), horizontal = TRUE)
-      # }
       
       return(graph_concentration)
     })
     
-    # Plot of Danger zone ----
     output$plot_2 <- renderPlot({
       
       req(simul$updated)
+
+      # Elements for lines
+      adj_growth_r <- log(input$growth_r)/48
+      conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
+      mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
+      msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
+      t_open <- (simul_concentration()$times[msw_open == TRUE])/24
       
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
-      adj_growth_r <- log(input$growth_r)/48
-      conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
-      t_open <- (simul$simul_parasites$time[simul$simul_parasites$msw_open == TRUE])/24
-      t_close <- (simul$simul_parasites$time[simul$simul_parasites$msw_close == TRUE])/24
+      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
+      msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      t_close <- (simul_concentration()$times[msw_close == TRUE])/24
+      
       
       ggplot(data = simul$simul_parasites, aes(x = time / 24)) +
         geom_line(aes(y = S, colour = 'Sensitive Parasites'), size = 1.2) +
@@ -316,7 +325,6 @@ shinyServer(
         scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                       labels = trans_format("log10", math_format(10^.x))) +
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-        # geom_hline(yintercept = 1, lty = 2) +
         geom_vline(xintercept = t_open, colour = '#e41a1c', linetype = 'dashed') +
         geom_vline(xintercept = t_close, colour = '#377eb8', linetype = 'dashed') +
         labs(x = "Time (days)", y = "Parasites (Log scale)", title = "Sensitive and Resistant Parasites") +
