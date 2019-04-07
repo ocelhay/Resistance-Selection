@@ -1,3 +1,23 @@
+/* Change the height of the modal */
+/* Allow to have consitent position of the Back and Next links at the bottom of each modal */
+.modal-body { min-height:600px}
+
+
+.footer{
+   position:fixed;
+   text-align:center;
+   left: 0;
+   bottom: 0;
+   width:100%;
+   z-index:1000;  
+   height: 30px; /* Height of the footer */
+   color: white;
+   /*padding: 10px;*/
+   font-weight: bold;
+   background-color: #2c3e50;
+}
+
+
 /* Sidebar */
 .well2 {
     min-height: 20px;

@@ -29,20 +29,24 @@ ui <- function(request) { fluidPage(
   # titlePanel(title = "Resistance Selection Showcase App", windowTitle = "Resistance Selection"),
   fluidRow(column(6,
                   h3("Resistance Selection Showcase App"),
-                  span(actionLink('about_model', span('Our model', icon('external-link-alt'))),
-                       "simulate the evolution of", em("sensitive"), " and ", em("resistant"), 
-                       "parasites. This App allow you to modify several parameters related to the ",
-                       actionLink('about_drug', span('drug concentration and half life', icon('external-link-alt'))),
-                       "as well as the",
-                       actionLink('about_dose_response', span('dose-response relationship', icon('external-link-alt'))),
-                       "You can readily observe the impact of these parameters on the ",
-                       actionLink('about_msw', span('Mutant Selection Window (MSW)', icon('external-link-alt'))),
-                       " and the potential for resistance to the drug in different scenario of infections."
-                  )
+                  # span(actionLink('about_model', span('Our model', icon('external-link-alt'))),
+                  #      "simulate the evolution of", em("sensitive"), " and ", em("resistant"), 
+                  #      "parasites. This App allow you to modify several parameters related to the ",
+                  #      actionLink('about_drug', span('drug concentration and half life', icon('external-link-alt'))),
+                  #      "as well as the",
+                  #      actionLink('about_dose_response', span('dose-response relationship', icon('external-link-alt'))),
+                  #      "You can readily observe the impact of these parameters on the ",
+                  #      actionLink('about_msw', span('Mutant Selection Window (MSW)', icon('external-link-alt'))),
+                  #      " and the potential for resistance to the drug in different scenario of infections."
+                  # ),
+                  p('Our model simulate the evolution of', em('sensitive'), 'and ', em('resistant'), 
+                    'parasites associated with the action of a drug. ', span(actionLink('about_model', span('Learn more about it', icon('external-link-alt')))), 'This App allow you to modify several parameters related to the drug concentration and half life 
+as well as the dose-response relationship. You can readily observe the impact of these parameters on the 
+Mutant Selection Window (MSW) and the potential for resistance to the drug in different scenario of infections.')
   ),
   column(6,
          div( class = 'logo',
-              img(src = 'MORU_FS_Partners.png', align = "right", height = '75px')
+              img(src = 'MORU_FS_Partners.png', align = "right", width = '80%')
          )
   )
   ),
@@ -115,14 +119,10 @@ ui <- function(request) { fluidPage(
                         br(),
                         fluidRow(column(4, offset = 1, htmlOutput('mpc_time')), column(4, offset = 1, htmlOutput('mic_time')))
                )
-           )
+           ),
+           
+           br(), br()
     ),
-    
-    
-    
-    
-    
-    # column(width = 1, br()),
     
     # Show a plot of the generated distribution
     column(width = 7,
@@ -140,7 +140,7 @@ ui <- function(request) { fluidPage(
     )
   ),
   br(), br(),
-  actionLink(label = "Take a Snapshot of the App", inputId = "._bookmark_"),
-  br()
+  source('./www/footer.R', local = TRUE)$value
+  
 )
 }

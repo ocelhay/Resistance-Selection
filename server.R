@@ -23,70 +23,75 @@ shinyServer(
       t_secondary = input$t_secondary)
     })
     
+    
+    # Welcomce modal
+    # source('./www/welcome_modal.R', local = TRUE)
+    
+    
     # Modal help ----
+    source('./www/about_modal.R', local = TRUE)
     
-    
-    output$modal_about_model <- renderUI(
-      img(src = "./model.png", width = '800px')
-    )
-    
-    observeEvent(input$about_model, {
-      showModal(modalDialog(
-        title = "Model",
-        uiOutput('modal_about_model'),
-        size= 'l',
-        footer = NULL,
-        fade = FALSE,
-        easyClose = TRUE
-      ))
-    })
-    
-    output$modal_about_drug <- renderUI(
-      img(src = "./drug_concentration.png", width = '800px')
-    )
-    
-    observeEvent(input$about_drug, {
-      showModal(modalDialog(
-        title = "Drug Concentration and Half Life",
-        uiOutput('modal_about_drug'),
-        size= 'l',
-        footer = NULL,
-        fade = FALSE,
-        easyClose = TRUE
-      ))
-    })
-    
-    
-    output$modal_about_msw <- renderUI(
-      img(src = "./msw.png", width = '800px')
-    )
-    
-    observeEvent(input$about_msw, {
-      showModal(modalDialog(
-        title = "Mutant Selection Window",
-        uiOutput('modal_about_msw'),
-        size= 'l',
-        footer = NULL,
-        fade = FALSE,
-        easyClose = TRUE
-      ))
-    })
-    
-    
-    output$modal_dose_response <- renderUI(
-      img(src = "./dose_response.png", width = '800px')
-    )
-    
-    observeEvent(input$about_dose_response, {
-      showModal(modalDialog(
-        title = "Dose-Response",
-        uiOutput('modal_dose_response'),
-        size= 'l',
-        footer = NULL,
-        fade = FALSE,
-        easyClose = TRUE
-      ))
-    })
+    # output$modal_about_model <- renderUI(
+    #   img(src = "./model.png", width = '800px')
+    # )
+    # 
+    # observeEvent(input$about_model, {
+    #   showModal(modalDialog(
+    #     title = "Model",
+    #     uiOutput('modal_about_model'),
+    #     size= 'l',
+    #     footer = NULL,
+    #     fade = FALSE,
+    #     easyClose = TRUE
+    #   ))
+    # })
+    # 
+    # output$modal_about_drug <- renderUI(
+    #   img(src = "./drug_concentration.png", width = '800px')
+    # )
+    # 
+    # observeEvent(input$about_drug, {
+    #   showModal(modalDialog(
+    #     title = "Drug Concentration and Half Life",
+    #     uiOutput('modal_about_drug'),
+    #     size= 'l',
+    #     footer = NULL,
+    #     fade = FALSE,
+    #     easyClose = TRUE
+    #   ))
+    # })
+    # 
+    # 
+    # output$modal_about_msw <- renderUI(
+    #   img(src = "./msw.png", width = '800px')
+    # )
+    # 
+    # observeEvent(input$about_msw, {
+    #   showModal(modalDialog(
+    #     title = "Mutant Selection Window",
+    #     uiOutput('modal_about_msw'),
+    #     size= 'l',
+    #     footer = NULL,
+    #     fade = FALSE,
+    #     easyClose = TRUE
+    #   ))
+    # })
+    # 
+    # 
+    # output$modal_dose_response <- renderUI(
+    #   img(src = "./dose_response.png", width = '800px')
+    # )
+    # 
+    # observeEvent(input$about_dose_response, {
+    #   showModal(modalDialog(
+    #     title = "Dose-Response",
+    #     uiOutput('modal_dose_response'),
+    #     size= 'l',
+    #     footer = NULL,
+    #     fade = FALSE,
+    #     easyClose = TRUE
+    #   ))
+    # })
     
     
     # Warning on UI values ----
