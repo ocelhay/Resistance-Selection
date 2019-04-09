@@ -59,7 +59,7 @@ Mutant Selection Window (MSW) and the potential for resistance selection.')
     column(width = 4,
            tabsetPanel(
              # ----
-             tabPanel("Drug Dose & Pharmacokinetics",
+             tabPanel("Drug Dose & PK",
                       div(class = 'well2',
                           br(),
                           sliderInputSplit("dose", label = span("Dose of Drug Absorbed", br(), "(t = 0)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 500, post = ' mg', ticks = FALSE),
