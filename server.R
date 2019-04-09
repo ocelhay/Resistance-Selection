@@ -227,7 +227,7 @@ shinyServer(
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       
-      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration = ', round(conc_start_growth_r, 2), ' mg/L.')))
+      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration = ', br(), round(conc_start_growth_r, 2), ' mg/L.')))
     })
     
     # MIC
@@ -235,7 +235,7 @@ shinyServer(
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       
-      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration = ', round(conc_start_growth_s, 2), ' mg/L.')))
+      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration = ', br(), round(conc_start_growth_s, 2), ' mg/L.')))
     })
     
     # Mutant Selection Window, time ----
@@ -244,7 +244,7 @@ shinyServer(
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
       t_open <- (simul_concentration()$times[msw_open == TRUE])/24
-      paste0(div(class = 'mpc', span('the MPC is reached at ' , round(t_open, 2), ' days.')))
+      paste0(div(class = 'mpc', span('attained at ' , round(t_open, 2), ' days after start treatment.')))
     })
     
     output$mic_time <- renderText({
@@ -252,7 +252,7 @@ shinyServer(
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
       t_close <- (simul_concentration()$times[msw_close == TRUE])/24
-      paste0(div(class = 'mic2', span('the MIC is reached at ' , round(t_close, 2), ' days.')))
+      paste0(div(class = 'mic2', span('attained at ' , round(t_close, 2), ' days after start treatment.')))
     })
     
     output$window <- renderText({
@@ -357,9 +357,9 @@ shinyServer(
       req(simul$updated)
       
       danger_days <- round(sum(simul$simul_parasites$prop_R > 10) / 24, 1)
-      if(is.na(danger_days)) return('All parasites are eliminated by the drug.')
-      if(danger_days == 0) return(paste0("Resistant parasites are dominated by sensitive parasites."))
-      if(danger_days > 0) return(paste0("For ", danger_days, " days, 10% or more of total parasites are resistant."))
+      if(is.na(danger_days)) return(paste0(span(icon('check'), em('All parasites are eliminated by the drug.'))))
+      if(danger_days == 0) return(paste0(span(icon('check'), em('Resistant parasites are dominated by sensitive parasites.'))))
+      if(danger_days > 0) return(paste0(h4(span(icon('exclamation'), "Potential for resistant selection: for ", danger_days, " days, 10% or more of total parasites are resistant."))))
     })
     
   }

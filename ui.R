@@ -40,13 +40,13 @@ ui <- function(request) { fluidPage(
                   #      " and the potential for resistance to the drug in different scenario of infections."
                   # ),
                   p('Our model simulate the evolution of', em('sensitive'), 'and ', em('resistant'), 
-                    'parasites associated with the action of a drug. ', span(actionLink('about_model', span('Learn more about it', icon('external-link-alt')))), 'This App allow you to modify several parameters related to the drug concentration and half life 
-as well as the dose-response relationship. You can readily observe the impact of these parameters on the 
-Mutant Selection Window (MSW) and the potential for resistance to the drug in different scenario of infections.')
+                    'parasites under the action of an anti-malarial drug. ', span(actionLink('about_model', span('Learn more about this model', icon('external-link-alt')))), 
+'This App allow you to modify several parameters related to the drug, dose-response and parasites and to immediately observe the impact on the 
+Mutant Selection Window (MSW) and the potential for resistance selection.')
   ),
   column(6,
-         div( class = 'logo',
-              img(src = 'MORU_FS_Partners.png', align = "right", width = '80%')
+         div(class = 'logo',
+             tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', align = "right", width = '80%'))
          )
   )
   ),
@@ -56,7 +56,7 @@ Mutant Selection Window (MSW) and the potential for resistance to the drug in di
   # Sidebar with inputs ----
   
   fluidRow(
-    column(width = 5,
+    column(width = 4,
            tabsetPanel(
              # ----
              tabPanel("Drug Dose & Pharmacokinetics",
@@ -110,33 +110,40 @@ Mutant Selection Window (MSW) and the potential for resistance to the drug in di
                           )
                       )
              )
-           ),
-           
-           div(class = 'info-bottom',
-               fluidRow(column(12, htmlOutput("half_life"))),
-               fluidRow(column(12, htmlOutput('window')),
-                        fluidRow(column(4, offset = 1, htmlOutput('mpc')), column(4, offset = 1, htmlOutput('mic'))),
-                        br(),
-                        fluidRow(column(4, offset = 1, htmlOutput('mpc_time')), column(4, offset = 1, htmlOutput('mic_time')))
-               )
-           ),
-           
-           br(), br()
+           )
     ),
     
     # Show a plot of the generated distribution
-    column(width = 7,
-           plotOutput("plot_1", height = "200px") %>% 
-             withSpinner(type = 7, size = 0.7),
-           br(),
+    column(width = 8,
+           fluidRow(
+             column(width = 6, 
+                    plotOutput("plot_1", height = "300px") %>% 
+                      withSpinner(type = 7, size = 0.7),
+                    br()),
+             column(width = 6, 
+                    div(class = 'info-bottom',
+                        fluidRow(column(12, htmlOutput("half_life"))),
+                        br(),
+                        fluidRow(column(12, htmlOutput('window')),
+                                 fluidRow(column(5, offset = 1, htmlOutput('mpc')), column(5, htmlOutput('mic'))),
+                                 br(),
+                                 fluidRow(column(5, offset = 1, htmlOutput('mpc_time')), column(5, htmlOutput('mic_time')))
+                        )
+                    ))
+           ),
            
-           plotOutput("plot_2", height = "300px") %>% 
-             withSpinner(type = 7, size = 0.7),
-           br(),
-           
-           plotOutput("plot_3", height = "150px") %>% 
-             withSpinner(type = 7, size = 0.7),
-           htmlOutput("danger_time")
+           fluidRow(
+             column(width = 6, 
+                    plotOutput("plot_2", height = "300px") %>% 
+                      withSpinner(type = 7, size = 0.7),
+                    br()),
+             column(width = 6, 
+                    htmlOutput("danger_time"),
+                    br(),
+                    plotOutput("plot_3", height = "150px") %>% 
+                      withSpinner(type = 7, size = 0.7)
+                    )
+           )
     )
   ),
   br(), br(),
