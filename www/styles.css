@@ -1,23 +1,15 @@
+/* Add margins around the logo */
+.logo {
+  margin-top: 50px;
+  margin-right: 25px;
+  margin-bottom: 25px;
+}
+
 /* Change the height of the modal */
 /* Allow to have consitent position of the Back and Next links at the bottom of each modal */
 .modal-body { min-height:600px}
 
-/*
-.footer{
-   position:fixed;
-   text-align:center;
-   left: 0;
-   bottom: 0;
-   width:100%;
-   z-index:1000;  
-   height: 30px; 
-   color: white;
-   font-weight: bold;
-   background-color: #2c3e50;
-}
-*/
-
-
+/* Footer */
 .footer {
   position: fixed;
   left: 0;
@@ -45,10 +37,11 @@
 }
 
 
-/* Summary statistics */
+/* Summary statistics 
 .tab-pane {
   background-color: #f5f5f5;
 }
+*/
 
 
 /* for slider labels: sl if the slider is on one single line and dl for double line */
@@ -87,8 +80,8 @@
 
 .mic {
   padding-right: 4px;
-  border-top: 5px dashed #377eb8;
-  border-right: 5px dashed #377eb8;
+  border-top: 3px dashed #377eb8;
+  border-right: 3px dashed #377eb8;
   color: #377eb8;
   animation-name: anim_mic;
   animation-duration: 8s;
@@ -96,8 +89,8 @@
 
 .mic2 {
   padding-right: 4px;
-  border-right: 5px dashed #377eb8;
-  border-bottom: 5px dashed #377eb8;
+  border-right: 3px dashed #377eb8;
+  border-bottom: 3px dashed #377eb8;
   color: #377eb8;
   animation-name: anim_mic;
   animation-duration: 8s;
@@ -114,8 +107,8 @@
 
 .mpc {
   padding-left: 4px;
-  border-left: 5px dashed #e41a1c;
-  border-bottom: 5px dashed #e41a1c;
+  border-left: 3px dashed #e41a1c;
+  border-bottom: 3px dashed #e41a1c;
   color: #e41a1c;
   animation-name: anim_mpc;
   animation-duration: 8s;
@@ -123,8 +116,8 @@
 
 .mpc2 {
   padding-left: 4px;
-  border-left: 5px dashed #e41a1c;
-  border-top: 5px dashed #e41a1c;
+  border-left: 3px dashed #e41a1c;
+  border-top: 3px dashed #e41a1c;
   color: #e41a1c;
   animation-name: anim_mpc;
   animation-duration: 8s;
@@ -153,6 +146,14 @@
     border-top: 3px solid #377eb8; 
 }
 
+.resistantcol {
+    color: #e41a1c;
+}
+
+.sensitivecol {
+    color: #377eb8;
+}
+
 .alertbox {
   color: #e41a1c;
 }
@@ -169,15 +170,4 @@
 .infolink {
     color: #377eb8;
     text-decoration: underline;
-}
-
-/* for slider labels */
-.lab {
-  text-align: right;
-}
-
-.logo {
-  margin-top: 15px;
-  margin-right: 25px;
-  margin-bottom: 25px;
 }

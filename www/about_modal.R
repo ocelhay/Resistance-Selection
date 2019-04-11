@@ -52,7 +52,7 @@ observeEvent(input$close_ma2, removeModal())
 modal_about_3 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
-  img(src = "./dose_response.png", width = '800px'),
+  img(src = "./msw.png", width = '800px'),
   
   footer = fluidRow(
     column(3, HTML('')),
@@ -74,7 +74,7 @@ observeEvent(input$close_ma3, removeModal())
 modal_about_4 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
-  img(src = "./msw.png", width = '800px'),
+  HTML('We will provice more information on the model here.'),
   
     footer = fluidRow(
       column(3, HTML('')),

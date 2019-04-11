@@ -1,74 +1,66 @@
 ui <- function(request) { fluidPage(
-  # theme = shinytheme("flatly"),
   theme = "bootstrap.css",
   includeCSS("./www/styles.css"),
-  title = "Resistance Selection",
+  
+  title = "Drug Resistance Selection App",
   
   # Change default slider
   chooseSliderSkin('HTML5'),
   
-  # KaTeX
-  # tags$head(
-  #   tags$link(rel="stylesheet",
-  #             href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css",
-  #             integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ",
-  #             crossorigin="anonymous"),
-  #   HTML('<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>'),
-  #   HTML('<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>'),
-  #   HTML('
-  #        <script>
-  #        document.addEventListener("DOMContentLoaded", function(){
-  #        renderMathInElement(document.body, {
-  #        delimiters: [{left: "$", right: "$", display: false}]
-  #        });
-  #        })
-  #        </script>')
-  # ),
-  
   # Add window title ----
-  # titlePanel(title = "Resistance Selection Showcase App", windowTitle = "Resistance Selection"),
-  fluidRow(column(6,
-                  h3("Resistance Selection Showcase App"),
-                  # span(actionLink('about_model', span('Our model', icon('external-link-alt'))),
-                  #      "simulate the evolution of", em("sensitive"), " and ", em("resistant"), 
-                  #      "parasites. This App allow you to modify several parameters related to the ",
-                  #      actionLink('about_drug', span('drug concentration and half life', icon('external-link-alt'))),
-                  #      "as well as the",
-                  #      actionLink('about_dose_response', span('dose-response relationship', icon('external-link-alt'))),
-                  #      "You can readily observe the impact of these parameters on the ",
-                  #      actionLink('about_msw', span('Mutant Selection Window (MSW)', icon('external-link-alt'))),
-                  #      " and the potential for resistance to the drug in different scenario of infections."
-                  # ),
-                  p('Our model simulate the evolution of', em('sensitive'), 'and ', em('resistant'), 
-                    'parasites under the action of an anti-malarial drug. ', span(actionLink('about_model', span('Learn more about this model', icon('external-link-alt')))), 
-'This App allow you to modify several parameters related to the drug, dose-response and parasites and to immediately observe the impact on the 
-Mutant Selection Window (MSW) and the potential for resistance selection.')
+  fluidRow(
+    column(4,
+           h3("Drug Resistance Selection App"),
+           p('Drug resistance is the reduction in effectiveness of a medication such as an antimicrobial or an antineoplastic in treating a disease or condition.')
+    ),
+    column(4,
+           br(),
+           span(span(actionLink('about_model', span('Our simple mathematical model', icon('external-link-alt')))), ' simulate the co-evolution of', 
+                span(class = 'sensitivecol', 'sensitive parasites'), 'and ', span(class = 'resistantcol', 'resistant parasites'), 
+                ' under a drug regimen.', 
+                'This App allow you to modify several parameters related to the drug, dose-response and parasites and to immediately observe the potential for resistance selection.')),
+    
+    column(4,
+           div(class = 'logo',
+               tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', width = '100%'))
+           )
+    )
   ),
-  column(6,
-         div(class = 'logo',
-             tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', align = "right", width = '80%'))
-         )
-  )
-  ),
-  br(),
+  hr(),
   
   
   # Sidebar with inputs ----
   
   fluidRow(
-    column(width = 4,
+    column(width = 5,
            tabsetPanel(
              # ----
-             tabPanel("Drug Dose & PK",
+             tabPanel("Drug Regimen",
                       div(class = 'well2',
                           br(),
-                          sliderInputSplit("dose", label = span("Dose of Drug Absorbed", br(), "(t = 0)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 500, post = ' mg', ticks = FALSE),
+                          sliderInputSplit("dose_1", label = span("Dose of Drug Absorbed", br(), "(At t = 0)"), l = 5, class = 'dl', min = 50, max = 1000, step = 50, value = 100, post = ' mg', ticks = FALSE),
+                          hr(),
+                          sliderInputSplit("dose_2", label = span("Dose of Drug Absorbed", br(), "(second dose)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 0, post = ' mg', ticks = FALSE),
+                          conditionalPanel(
+                            condition = "input.dose_2 > 0",
+                            sliderInputSplit(inputId = "t_dose_2", label = 'Time of Intake of second dose', l = 5, class = 'dl', min = 12, max = 192, step = 6, value = 24, post = ' h', ticks = FALSE)
+                          ),
+                          hr(),
+                          sliderInputSplit("dose_3", label = span("Dose of Drug Absorbed", br(), "(third dose)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 0, post = ' mg', ticks = FALSE),
+                          conditionalPanel(
+                            condition = "input.dose_3 > 0",
+                            sliderInputSplit(inputId = "t_dose_3", label = 'Time of Intake of thirs dose', l = 5, class = 'dl', min = 12, max = 192, step = 6, value = 48, post = ' h', ticks = FALSE)
+                          )
+                      )
+             ),
+             tabPanel("Drug PK",
+                      div(class = 'well2',
                           br(),
                           h4(icon('caret-right'), "Drug Pharmacokinetics"),
                           sliderInputSplit("ka", label = "Absortion", l = 5, class = 'sl', min = 0, max = 100, step = 5, value = 100, post = '%', ticks = FALSE),
                           sliderInputSplit("Fa", label = "Bioavailability", l = 5, class = 'sl', min = 0, max = 1, step = 0.05, value = 0.8, ticks = FALSE),
                           sliderInputSplit("V", label = "Volume of Distribution", l = 5, class = 'dl', min = 4, max = 20, step = 1, ticks = FALSE, post = ' l.', value = 6),
-                          sliderInputSplit("CL", label = "Clearance Rate", l = 5, class = 'dl', min = 0.1, max = 1, ticks = FALSE, post = ' l/h', value = 0.4)
+                          sliderInputSplit("CL", label = "Clearance Rate", l = 5, class = 'dl', min = 0.1, max = 1, step = 0.05, ticks = FALSE, post = ' l/h', value = 0.4)
                       )
                       
              ),
@@ -76,8 +68,8 @@ Mutant Selection Window (MSW) and the potential for resistance selection.')
                       div(class = 'well2',
                           br(),
                           h4(icon('caret-right'), "EC50"),
-                          sliderInputSplit(inputId = "EC50_s", label = "Sensitive Parasites", min = 0, max = 100, value = 10, ticks = FALSE),
-                          sliderInputSplit(inputId = "EC50_r", label = "Resistant Parasites", min = 0, max = 100, value = 50, ticks = FALSE),
+                          sliderInputSplit(inputId = "EC50_s", label = "Sensitive Parasites", min = 0, max = 100, value = 10, step = 5, ticks = FALSE),
+                          sliderInputSplit(inputId = "EC50_r", label = "Resistant Parasites", min = 0, max = 100, value = 50, step = 5,  ticks = FALSE),
                           htmlOutput('message_EC50'),
                           
                           h4(icon('caret-right'), "Other Drug-Effect Parameters"),
@@ -114,35 +106,35 @@ Mutant Selection Window (MSW) and the potential for resistance selection.')
     ),
     
     # Show a plot of the generated distribution
-    column(width = 8,
+    column(width = 7,
            fluidRow(
-             column(width = 6, 
+             column(width = 7, 
                     plotOutput("plot_1", height = "300px") %>% 
                       withSpinner(type = 7, size = 0.7),
                     br()),
-             column(width = 6, 
+             column(width = 5, 
                     div(class = 'info-bottom',
                         fluidRow(column(12, htmlOutput("half_life"))),
                         br(),
-                        fluidRow(column(12, htmlOutput('window')),
-                                 fluidRow(column(5, offset = 1, htmlOutput('mpc')), column(5, htmlOutput('mic'))),
-                                 br(),
-                                 fluidRow(column(5, offset = 1, htmlOutput('mpc_time')), column(5, htmlOutput('mic_time')))
-                        )
+                        fluidRow(column(6, htmlOutput('mpc')), column(6, htmlOutput('mic'))),
+                        br(),
+                        fluidRow(column(6, htmlOutput('mpc_time')), column(6, htmlOutput('mic_time'))),
+                        fluidRow(column(12, htmlOutput('window')))
                     ))
            ),
            
            fluidRow(
-             column(width = 6, 
+             column(width = 7, 
                     plotOutput("plot_2", height = "300px") %>% 
                       withSpinner(type = 7, size = 0.7),
                     br()),
-             column(width = 6, 
+             column(width = 5, 
+                    br(), br(),
                     htmlOutput("danger_time"),
                     br(),
                     plotOutput("plot_3", height = "150px") %>% 
                       withSpinner(type = 7, size = 0.7)
-                    )
+             )
            )
     )
   ),

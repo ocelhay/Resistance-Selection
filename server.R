@@ -10,7 +10,11 @@ shinyServer(
       nb_sensitive_sec = as.numeric(input$nb_sensitive_sec),
       growth_s = input$growth_s,
       growth_r = input$growth_r,
-      dose = input$dose,
+      dose_1 = input$dose_1,
+      dose_2 = input$dose_2,
+      t_dose_2 = input$t_dose_2,
+      dose_3 = input$dose_3,
+      t_dose_3 = input$t_dose_3,
       ka = input$ka,
       Fa = input$Fa,
       V = input$V,
@@ -117,7 +121,13 @@ shinyServer(
     # Simulate drug concentration over time ----
     simul_concentration <- reactive({
       tibble(times = c(seq(0, 1.99, by = 0.01), 2:240),
-             Ct = drug_concentration(dose = input$dose, ka = input$ka, Fa = input$Fa, V = input$V, 
+             Ct = drug_concentration(dose_1 = input$dose_1,
+                                     t_dose_1 = 0,
+                                     dose_2 = input$dose_2,
+                                     t_dose_2 = input$t_dose_2,
+                                     dose_3 = input$dose_3,
+                                     t_dose_3 = input$t_dose_3,
+                                     ka = input$ka, Fa = input$Fa, V = input$V, 
                                      CL = input$CL, t = c(seq(0, 1.99, by = 0.01), 2:240))
       )
     })
@@ -128,7 +138,11 @@ shinyServer(
       list_parameters <- list(
         growth_s = input$growth_s,
         growth_r = input$growth_r,
-        dose = input$dose,
+        dose_1 = input$dose_1,
+        dose_2 = input$dose_2,
+        t_dose_2 = input$t_dose_2,
+        dose_3 = input$dose_3,
+        t_dose_3 = input$t_dose_3,
         ka = input$ka,
         Fa = input$Fa,
         V = input$V,
@@ -155,7 +169,7 @@ shinyServer(
                               func = parasite_function, 
                               parms = list_parameters,
                               type = 'S') %>%
-        as.tibble() %>%
+        as_tibble() %>%
         pull(P)
       
       out$S[times_post] <- ode(y = c(P = last(out$S[times_pre]) + as.numeric(input$nb_sensitive_sec)), 
@@ -163,7 +177,7 @@ shinyServer(
                                func = parasite_function, 
                                parms = list_parameters,
                                type = 'S') %>%
-        as.tibble() %>%
+        as_tibble() %>%
         pull(P)
       
       # Resistant
@@ -175,7 +189,7 @@ shinyServer(
                               func = parasite_function, 
                               parms = list_parameters,
                               type = 'R') %>%
-        as.tibble() %>%
+        as_tibble() %>%
         pull(P)
       
       out$R[times_post] <- ode(y = c(P = last(out$R[times_pre]) + as.numeric(input$nb_resistant_sec)), 
@@ -183,7 +197,7 @@ shinyServer(
                                func = parasite_function, 
                                parms = list_parameters,
                                type = 'R') %>%
-        as.tibble() %>%
+        as_tibble() %>%
         pull(P)
       
       
@@ -227,7 +241,7 @@ shinyServer(
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       
-      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration = ', br(), round(conc_start_growth_r, 2), ' mg/L.')))
+      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration = ', round(conc_start_growth_r, 2), ' mg/L.')))
     })
     
     # MIC
@@ -235,57 +249,65 @@ shinyServer(
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       
-      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration = ', br(), round(conc_start_growth_s, 2), ' mg/L.')))
+      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration = ', round(conc_start_growth_s, 2), ' mg/L.')))
     })
+    
+    
+    
     
     # Mutant Selection Window, time ----
     output$mpc_time <- renderText({
       adj_growth_r <- log(input$growth_r)/48
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
-      t_open <- (simul_concentration()$times[msw_open == TRUE])/24
-      paste0(div(class = 'mpc', span('attained at ' , round(t_open, 2), ' days after start treatment.')))
+      
+      t_open <- round((simul_concentration()$times[msw_open == TRUE])/24, 1)
+      paste0(div(class = 'mpc', span('attained at ' , paste0(t_open, collapse = " / "), ' days from treatment onset.')))
     })
     
     output$mic_time <- renderText({
       adj_growth_s <- log(input$growth_s)/48
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
-      t_close <- (simul_concentration()$times[msw_close == TRUE])/24
-      paste0(div(class = 'mic2', span('attained at ' , round(t_close, 2), ' days after start treatment.')))
+      t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
+      paste0(div(class = 'mic2', span('attained at ', paste0(t_close, collapse = " / "), ' days from treatment onset.')))
     })
     
     output$window <- renderText({
       adj_growth_r <- log(input$growth_r)/48
-      adj_growth_s <- log(input$growth_s)/48
-      
-      # replace with simul_concentration
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
-      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
-      msw <-  (simul_concentration()$Ct >= mic & simul_concentration()$Ct <= mpc)
-      msw_open <-  c(0, diff(msw)) == 1
-      msw_close <-  c(0, diff(msw)) == -1
-      t_open <- (simul_concentration()$times[msw_open == TRUE])/24
-      t_close <- (simul_concentration()$times[msw_close == TRUE])/24
+      msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
+      t_open <- round((simul_concentration()$times[msw_open == TRUE])/24, 1)
       
-      paste0(div(class = 'half-life', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours:')))
+      adj_growth_s <- log(input$growth_s)/48
+      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
+      msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
+      
+      
+      ifelse(length(t_open) > 1 | length(t_close) > 1,
+             paste0(div(class = 'half-life', 'There are several Mutant Selection Windows.')),
+             paste0(div(class = 'half-life', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.')))
+             )
     })
     
     # Plot of Drug Concentration ----
     output$plot_1 <- renderPlot({
-
+      
       # Elements for lines
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
-      t_open <- (simul_concentration()$times[msw_open == TRUE])/24
+      
+      t_open <- tibble(times = (simul_concentration()$times[msw_open == TRUE])/24)
       
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
-      t_close <- (simul_concentration()$times[msw_close == TRUE])/24
+      
+      t_close <- tibble(times = (simul_concentration()$times[msw_close == TRUE])/24)
       
       print(paste0("t_open = ", t_open))
       
@@ -294,22 +316,23 @@ shinyServer(
         ggplot(aes(x = times / 24, y = Ct)) +
         geom_line(size = 1, colour = "grey") +
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-        geom_hline(aes(yintercept = conc_start_growth_s, col = 'MIC'), linetype = 'dashed') +
-        geom_hline(aes(yintercept = conc_start_growth_r, colour = 'MPC'), linetype = 'dashed') +
-        geom_vline(aes(xintercept = t_open, colour = 'MPC'), linetype = 'dashed') +
-        geom_vline(aes(xintercept = t_close, colour = 'MIC'), linetype = 'dashed') +
-        scale_color_manual(name = 'Mutant Selection Window', values = c(MPC = '#e41a1c', MIC = '#377eb8')) +
-        labs(x = "Time (days)", y = 'Concentration', title = "Drug concentration (mg/L)") +
+        geom_hline(aes(yintercept = conc_start_growth_s, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
+        geom_hline(aes(yintercept = conc_start_growth_r, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
+        geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
+        geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
+        scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
+        labs(x = "Time (days)", y = 'Concentration (mg/L)', title = "Drug Concentration") +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')
       
       return(graph_concentration)
     })
     
+    # Evolution of parasites ----
     output$plot_2 <- renderPlot({
       
       req(simul$updated)
-
+      
       # Elements for lines
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
@@ -332,7 +355,7 @@ shinyServer(
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
         geom_vline(xintercept = t_open, colour = '#e41a1c', linetype = 'dashed') +
         geom_vline(xintercept = t_close, colour = '#377eb8', linetype = 'dashed') +
-        labs(x = "Time (days)", y = "Parasites (Log scale)", title = "Sensitive and Resistant Parasites") +
+        labs(x = "Time (days)", y = "Parasites (Log scale)", title = "Evolution of Parasites") +
         scale_colour_manual(name = NULL, values = cols) +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')
@@ -347,7 +370,7 @@ shinyServer(
         geom_point(aes(y = prop_S), size = 1.2, col = '#377eb8') +
         geom_point(aes(y = prop_R), size = 1.2, col = '#e41a1c') +
         geom_hline(yintercept = 10, lty = 2) +
-        labs(x = "Time (days)", y = "Proportion", title = "Proportion of Sensitive/Resistant on Total") +
+        labs(x = "Time (days)", y = "Proportion", title = "Proportion of Sensitive/Resistant") +
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
         theme_minimal(base_size = 14)
     })
@@ -357,9 +380,9 @@ shinyServer(
       req(simul$updated)
       
       danger_days <- round(sum(simul$simul_parasites$prop_R > 10) / 24, 1)
-      if(is.na(danger_days)) return(paste0(span(icon('check'), em('All parasites are eliminated by the drug.'))))
-      if(danger_days == 0) return(paste0(span(icon('check'), em('Resistant parasites are dominated by sensitive parasites.'))))
-      if(danger_days > 0) return(paste0(h4(span(icon('exclamation'), "Potential for resistant selection: for ", danger_days, " days, 10% or more of total parasites are resistant."))))
+      if(is.na(danger_days)) return(paste0(span(icon('check'), 'All parasites are eliminated by the drug.')))
+      if(danger_days == 0) return(paste0('Resistant parasites are dominated by sensitive parasites.'))
+      if(danger_days > 0) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), "Potential for selection of resistance", br(), "for ",  danger_days, " days, 10% or more of total parasites are resistant.")))
     })
     
   }

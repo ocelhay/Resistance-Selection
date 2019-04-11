@@ -1,19 +1,28 @@
-drug_concentration <- function(dose, ka, Fa, V, CL, t) {
-  (dose * ka * Fa)/(V * ka - CL) * ( exp(-CL / V * t) - exp(-ka * t) )
+drug_concentration <- function(dose_1, t_dose_1 = 0, dose_2, t_dose_2, dose_3, t_dose_3, ka, Fa, V, CL, t) {
+  
+  Ct_1 <-  (dose_1 * ka * Fa)/(V * ka - CL) * ( exp(-CL / V * (t - t_dose_1)) - exp(-ka * (t - t_dose_1)) )
+  Ct_1[Ct_1 < 0] <- 0
+  
+  
+  ifelse(dose_2 == 0, Ct_2 <- 0, {
+    Ct_2 <-  (dose_2 * ka * Fa)/(V * ka - CL) * ( exp(-CL / V * (t - t_dose_2)) - exp(-ka * (t - t_dose_2)) )
+    Ct_2[Ct_2 < 0] <- 0
+  })
+  
+  ifelse(dose_3 == 0, Ct_3 <- 0, {
+  Ct_3 <-  (dose_3 * ka * Fa)/(V * ka - CL) * ( exp(-CL / V * (t - t_dose_3)) - exp(-ka * (t - t_dose_3)) )
+  Ct_3[Ct_3 < 0] <- 0
+  })
+  
+  
+  return(Ct_1 + Ct_2 + Ct_3)
 }
-
-# dose_response <- function(k1, Ct, EC50, n) {
-#   -k1 * Ct^n / (Ct^n + EC50^n)
-# }
-
-# conc_start_growth_r <- (-(growth_r / k1) * EC50_r^n)/(1 + (growth_r / k1))^(1/n)
-
 
 parasite_function <- function(t, state, parameters, type) {
   with(as.list(c(state, parameters)),
        {
          # drug concentration at time t
-         Ct <- (dose * ka * Fa)/(V * ka - CL) * (exp(-CL / V * t) - exp(-ka * t))
+         Ct <- drug_concentration(dose_1, t_dose_1 = 0, dose_2, t_dose_2, dose_3, t_dose_3, ka, Fa, V, CL, t)
          
          if(type != 'S' & type != 'R') 
            stop('Type parasite incorrect!')
