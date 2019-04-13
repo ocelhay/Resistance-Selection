@@ -351,7 +351,8 @@ shinyServer(
         geom_line(aes(y = S, colour = 'Sensitive Parasites'), size = 1.2) +
         geom_line(aes(y = R, colour = 'Resistant Parasites'), size = 1.2) +
         scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                      labels = trans_format("log10", math_format(10^.x))) +
+                      labels = trans_format("log10", math_format(10^.x)),
+                      limits = c(1, 10^12)) +
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
         geom_vline(xintercept = t_open, colour = '#e41a1c', linetype = 'dashed') +
         geom_vline(xintercept = t_close, colour = '#377eb8', linetype = 'dashed') +
