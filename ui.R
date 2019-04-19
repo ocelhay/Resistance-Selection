@@ -114,12 +114,19 @@ ui <- function(request) { fluidPage(
                     br()),
              column(width = 5, 
                     div(class = 'info-bottom',
-                        fluidRow(column(12, htmlOutput("half_life"))),
-                        br(),
+                        fluidRow(column(12, 
+                                        htmlOutput("half_life"),
+                                        htmlOutput("auc"),
+                                        htmlOutput("cmax"),
+                                        htmlOutput("tmax")
+                                        )
+                                 ),
+                        hr(),
                         fluidRow(column(6, htmlOutput('mpc')), column(6, htmlOutput('mic'))),
                         br(),
                         fluidRow(column(6, htmlOutput('mpc_time')), column(6, htmlOutput('mic_time'))),
-                        fluidRow(column(12, htmlOutput('window')))
+                        fluidRow(column(12, htmlOutput('window'))),
+                        hr()
                     ))
            ),
            

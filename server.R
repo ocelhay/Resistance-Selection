@@ -230,10 +230,37 @@ shinyServer(
     })
     
     
+    # Several PK parameters ----
+    
     # Compute half-life ----
-    output$half_life <- renderText(paste0(div(class = 'half-life', 
+    output$half_life <- renderText(paste0(div(class = 'output_animated', 
                                               span("The half-life of the drug is ", round(log(2) * input$V / input$CL, 2), ' hours.'))))
     
+    
+    # Compute AUC
+    output$auc <- renderText({
+      # Approximation for integrating the function using the trapezoidal rule with basepoints x.
+      auc_trapezoid <- trapz(simul_concentration()$times, simul_concentration()$Ct)
+      
+      # only for one dose, verification only
+      # auc_exact <- (input$dose_1 * input$ka * input$Fa)/(input$V * input$ka - input$CL)*((input$V / input$CL)-(1 / input$ka))
+      
+      return(paste0(div(class = 'output_animated', span("The AUC of the drug concentration is ", round(auc_trapezoid, 0), "."))))
+    })
+    
+    # Compute CMAX
+    output$cmax <- renderText({
+      cmax <- max(simul_concentration()$Ct)
+      return(paste0(div(class = 'output_animated', span("Cmax for the drug concentration is ", round(cmax, 2), "mg/L."))))
+    })
+    
+    # Compute TMAX
+    output$tmax <- renderText({
+      cmax <- max(simul_concentration()$Ct)
+      tmax <- simul_concentration()$times[simul_concentration()$Ct == cmax]
+      if(tmax > 2) return(paste0(div(class = 'output_animated', span("Tmax for the drug concentration is ", round(tmax, 1), "hours"))))
+      if(tmax <= 2) return(paste0(div(class = 'output_animated', span("Tmax for the drug concentration is ", round(60*tmax, 0), "minutes"))))
+    })
     
     # Mutant Selection Window, concentrations ----
     # MPC
@@ -286,8 +313,8 @@ shinyServer(
       
       
       ifelse(length(t_open) > 1 | length(t_close) > 1,
-             paste0(div(class = 'half-life', 'There are several Mutant Selection Windows.')),
-             paste0(div(class = 'half-life', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.')))
+             paste0(div(class = 'output_animated', 'There are several Mutant Selection Windows.')),
+             paste0(div(class = 'output_animated', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.')))
              )
     })
     
