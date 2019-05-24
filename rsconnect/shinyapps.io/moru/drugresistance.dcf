@@ -5,9 +5,9 @@ account: moru
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 739642
-bundleId: 2022477
+bundleId: 2107396
 url: https://moru.shinyapps.io/drugresistance/
-when: 1555633280.7113
+when: 1558739459.21432
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .gitattributes|.Rapp.history|README.md
