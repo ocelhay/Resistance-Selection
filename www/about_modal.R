@@ -9,6 +9,8 @@ observeEvent(input$about_model,  showModal(modal_about_1))
 modal_about_1 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
+  
+  p('Drug resistance is the reduction in effectiveness of a medication such as an antimicrobial or an antineoplastic in treating a disease or condition. Our simple mathematica model simulates the co-evolution of sensitive and resistant parasites under a drug regimen.'),
   img(src = "./model.png", width = '800px'),
   
   footer = fluidRow(

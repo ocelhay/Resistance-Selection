@@ -9,30 +9,24 @@ ui <- function(request) { fluidPage(
   
   # Add window title ----
   fluidRow(
-    column(4,
-           h3("Drug Resistance Selection App"),
-           p('Drug resistance is the reduction in effectiveness of a medication such as an antimicrobial or an antineoplastic in treating a disease or condition.')
+    column(5,
+           h2("Drug Resistance Selection App"),
+           span(actionLink('about_model', span('About Drug Resistance and The App', icon('external-link-alt'))))
     ),
-    column(4,
-           br(),
-           span(span(actionLink('about_model', span('Our simple mathematical model', icon('external-link-alt')))), ' simulate the co-evolution of', 
-                span(class = 'sensitivecol', 'sensitive parasites'), 'and ', span(class = 'resistantcol', 'resistant parasites'), 
-                ' under a drug regimen.', 
-                'This App allow you to modify several parameters related to the drug, dose-response and parasites and to immediately observe the potential for resistance selection.')),
-    
-    column(4,
+    column(2),
+    column(5,
            div(class = 'logo',
                tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', width = '100%'))
            )
     )
   ),
-  hr(),
-  
   
   # Sidebar with inputs ----
   
   fluidRow(
     column(width = 5,
+           h3("Parameters"),
+           p('Modify the parameters related to the drug, dose-response and parasites and observe the potential for resistance selection.'),
            tabsetPanel(
              # ----
              tabPanel("Drug Regimen",
@@ -102,6 +96,13 @@ ui <- function(request) { fluidPage(
                           )
                       )
              )
+           ),
+           fluidRow(column(12, 
+                           htmlOutput("half_life"),
+                           htmlOutput("auc"),
+                           htmlOutput("cmax"),
+                           htmlOutput("tmax")
+           )
            )
     ),
     
@@ -109,34 +110,28 @@ ui <- function(request) { fluidPage(
     column(width = 7,
            fluidRow(
              column(width = 7, 
+                    h3("Drug Concentration"),
                     plotOutput("plot_1", height = "300px") %>% 
                       withSpinner(type = 7, size = 0.7),
                     br()),
              column(width = 5, 
+                    h3("Mutant Selection Window"),
                     div(class = 'info-bottom',
-                        fluidRow(column(12, 
-                                        htmlOutput("half_life"),
-                                        htmlOutput("auc"),
-                                        htmlOutput("cmax"),
-                                        htmlOutput("tmax")
-                                        )
-                                 ),
-                        hr(),
                         fluidRow(column(6, htmlOutput('mpc')), column(6, htmlOutput('mic'))),
                         br(),
                         fluidRow(column(6, htmlOutput('mpc_time')), column(6, htmlOutput('mic_time'))),
-                        fluidRow(column(12, htmlOutput('window'))),
-                        hr()
+                        fluidRow(column(12, htmlOutput('window')))
                     ))
            ),
            
            fluidRow(
              column(width = 7, 
+                    h3("Evolution of Parasites"),
                     plotOutput("plot_2", height = "300px") %>% 
                       withSpinner(type = 7, size = 0.7),
                     br()),
              column(width = 5, 
-                    br(), br(),
+                    h3("Proportion of Resistant"),
                     htmlOutput("danger_time"),
                     br(),
                     plotOutput("plot_3", height = "150px") %>% 

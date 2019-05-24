@@ -348,7 +348,7 @@ shinyServer(
         geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
         geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
         scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
-        labs(x = "Time (days)", y = 'Concentration (mg/L)', title = "Drug Concentration") +
+        labs(x = "Time (days)", y = 'Concentration (mg/L)', title = NULL) +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')
       
@@ -383,7 +383,7 @@ shinyServer(
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
         geom_vline(xintercept = t_open, colour = '#e41a1c', linetype = 'dashed') +
         geom_vline(xintercept = t_close, colour = '#377eb8', linetype = 'dashed') +
-        labs(x = "Time (days)", y = "Parasites (Log scale)", title = "Evolution of Parasites") +
+        labs(x = "Time (days)", y = "Parasites (Log scale)", title = NULL) +
         scale_colour_manual(name = NULL, values = cols) +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')

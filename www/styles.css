@@ -1,8 +1,8 @@
 /* Add margins around the logo */
 .logo {
-  margin-top: 50px;
+  margin-top: 20px;
   margin-right: 25px;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 
 /* Change the height of the modal */
