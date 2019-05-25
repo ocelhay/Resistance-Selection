@@ -10,13 +10,12 @@ ui <- function(request) { fluidPage(
   # Add window title ----
   fluidRow(
     column(5,
-           h2("Drug Resistance Selection App"),
+           em(h2("Drug Resistance Selection App")),
            span(actionLink('about_model', span('About Drug Resistance and The App', icon('external-link-alt'))))
     ),
-    column(2),
-    column(5,
+    column(7,
            div(class = 'logo',
-               tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', width = '100%'))
+               tags$a(href= 'http://www.tropmedres.ac/home', img(src = 'MORU_FS_Partners.png', height = '60px'))
            )
     )
   ),
