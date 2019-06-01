@@ -8,7 +8,7 @@ ui <- function(request) { fluidPage(
   chooseSliderSkin('HTML5'),
   
   # Add Google Analytics
-  tags$head(includeScript("./www/googleanalytics_resistanceselection.js")),
+  tags$head(includeHTML("./www/gtag.js")),
   
   # Add window title ----
   fluidRow(

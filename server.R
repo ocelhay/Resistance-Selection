@@ -312,10 +312,10 @@ shinyServer(
       t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
       
       
-      ifelse(length(t_open) > 1 | length(t_close) > 1,
-             paste0(div(class = 'output_animated', 'There are several Mutant Selection Windows.')),
-             paste0(div(class = 'output_animated', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.')))
-             )
+      if(t_open[[1]] >= t_close[[1]]) return(paste0(div(class = 'output_animated', 'There is no Mutant Selection Window.')))
+      if(length(t_open) > 1 | length(t_close) > 1) return(paste0(div(class = 'output_animated', 'There are several Mutant Selection Windows.')))
+      
+      return(paste0(div(class = 'output_animated', span('The Mutant Selection Window opens for ', round(24*(t_close - t_open), 2), ' hours.'))))
     })
     
     # Plot of Drug Concentration ----
@@ -337,8 +337,9 @@ shinyServer(
       t_close <- tibble(times = (simul_concentration()$times[msw_close == TRUE])/24)
       
       print(paste0("t_open = ", t_open))
+      cmax <- max(simul_concentration()$Ct)
       
-      
+      if(t_open[[1]] <= t_close[[1]]){
       graph_concentration <- simul_concentration() %>%
         ggplot(aes(x = times / 24, y = Ct)) +
         geom_line(size = 1, colour = "grey") +
@@ -348,9 +349,27 @@ shinyServer(
         geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
         geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
         scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
+        geom_curve(aes(x = (t_open[[1]] + t_close[[1]])/2, y = cmax, xend = 8, yend = cmax), color = "black", arrow = arrow(type = "closed")) +
+        geom_text(aes(x =  8, y = 1.1*cmax, size = 3, label = "Mutant Selection Window")) +
         labs(x = "Time (days)", y = 'Concentration (mg/L)', title = NULL) +
         theme_minimal(base_size = 14) +
         theme(legend.text = element_text(size = 13), legend.position = 'bottom')
+      }
+      
+      if(t_open[[1]] > t_close[[1]]){
+        graph_concentration <- simul_concentration() %>%
+          ggplot(aes(x = times / 24, y = Ct)) +
+          geom_line(size = 1, colour = "grey") +
+          scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
+          geom_hline(aes(yintercept = conc_start_growth_s, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
+          geom_hline(aes(yintercept = conc_start_growth_r, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
+          geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
+          geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
+          scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
+          labs(x = "Time (days)", y = 'Concentration (mg/L)', title = NULL) +
+          theme_minimal(base_size = 14) +
+          theme(legend.text = element_text(size = 13), legend.position = 'bottom')
+      }
       
       return(graph_concentration)
     })
