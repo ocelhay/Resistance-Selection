@@ -16,9 +16,9 @@ shinyServer(
       dose_3 = input$dose_3,
       t_dose_3 = input$t_dose_3,
       ka = input$ka,
+      ke = input$ke,
       Fa = input$Fa,
       V = input$V,
-      CL = input$CL,
       k1 = input$k1,
       n = input$n,
       EC50_s = input$EC50_s,
@@ -35,77 +35,16 @@ shinyServer(
     # Modal help ----
     source('./www/about_modal.R', local = TRUE)
     
-    # output$modal_about_model <- renderUI(
-    #   img(src = "./model.png", width = '800px')
-    # )
-    # 
-    # observeEvent(input$about_model, {
-    #   showModal(modalDialog(
-    #     title = "Model",
-    #     uiOutput('modal_about_model'),
-    #     size= 'l',
-    #     footer = NULL,
-    #     fade = FALSE,
-    #     easyClose = TRUE
-    #   ))
-    # })
-    # 
-    # output$modal_about_drug <- renderUI(
-    #   img(src = "./drug_concentration.png", width = '800px')
-    # )
-    # 
-    # observeEvent(input$about_drug, {
-    #   showModal(modalDialog(
-    #     title = "Drug Concentration and Half Life",
-    #     uiOutput('modal_about_drug'),
-    #     size= 'l',
-    #     footer = NULL,
-    #     fade = FALSE,
-    #     easyClose = TRUE
-    #   ))
-    # })
-    # 
-    # 
-    # output$modal_about_msw <- renderUI(
-    #   img(src = "./msw.png", width = '800px')
-    # )
-    # 
-    # observeEvent(input$about_msw, {
-    #   showModal(modalDialog(
-    #     title = "Mutant Selection Window",
-    #     uiOutput('modal_about_msw'),
-    #     size= 'l',
-    #     footer = NULL,
-    #     fade = FALSE,
-    #     easyClose = TRUE
-    #   ))
-    # })
-    # 
-    # 
-    # output$modal_dose_response <- renderUI(
-    #   img(src = "./dose_response.png", width = '800px')
-    # )
-    # 
-    # observeEvent(input$about_dose_response, {
-    #   showModal(modalDialog(
-    #     title = "Dose-Response",
-    #     uiOutput('modal_dose_response'),
-    #     size= 'l',
-    #     footer = NULL,
-    #     fade = FALSE,
-    #     easyClose = TRUE
-    #   ))
-    # })
-    
-    
     # Warning on UI values ----
     output$message_rate <- renderText({
-      if(input$growth_s <= input$growth_r) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), 'It is expected that the multiplicaton rate of sensitive parasites is greater than the one or resistant parasites (fitness of cost).')))
+      if(input$growth_s <= input$growth_r) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), 
+                                                             'It is expected that the multiplicaton rate of sensitive parasites is greater than the one or resistant parasites (fitness of cost).')))
       if(input$growth_s > input$growth_r) return('')
     })
     
     output$message_EC50 <- renderText({
-      if(input$EC50_s > input$EC50_r) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), 'It is expected that EC50 for resistant parasites is greater than EC50 for sensitive parasites.')))
+      if(input$EC50_s > input$EC50_r) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), 
+                                                        'It is expected that EC50 for resistant parasites is greater than EC50 for sensitive parasites.')))
       if(input$EC50_s <= input$EC50_r) return('')
     })
     
@@ -127,8 +66,11 @@ shinyServer(
                                      t_dose_2 = input$t_dose_2,
                                      dose_3 = input$dose_3,
                                      t_dose_3 = input$t_dose_3,
-                                     ka = input$ka, Fa = input$Fa, V = input$V, 
-                                     CL = input$CL, t = c(seq(0, 1.99, by = 0.01), 2:240))
+                                     ka = input$ka, 
+                                     ke = input$ke, 
+                                     Fa = input$Fa, 
+                                     V = input$V, 
+                                     t = c(seq(0, 1.99, by = 0.01), 2:240))
       )
     })
     
@@ -144,9 +86,9 @@ shinyServer(
         dose_3 = input$dose_3,
         t_dose_3 = input$t_dose_3,
         ka = input$ka,
+        ke = input$ke,
         Fa = input$Fa,
         V = input$V,
-        CL = input$CL,
         k1 = input$k1,
         n = input$n,
         EC50_s = input$EC50_s,
@@ -204,7 +146,6 @@ shinyServer(
       out <- out %>%
         mutate(S = replace(S, cumsum(S < 1) >= 1, 0),
                R = replace(R, cumsum(R > 0 & R < 1) >= 1, 0))
-      # }
       
       
       
@@ -232,23 +173,18 @@ shinyServer(
     
     # Several PK parameters ----
     
-    # Compute half-life ----
+    # half-life
     output$half_life <- renderText(paste0(div(class = 'output_animated', 
-                                              span("The half-life of the drug is ", round(log(2) * input$V / input$CL, 2), ' hours.'))))
+                                              span("The half-life of the drug is ", round(log(2) * input$ke, 2), ' hours.'))))
     
-    
-    # Compute AUC
+    # AUC
     output$auc <- renderText({
       # Approximation for integrating the function using the trapezoidal rule with basepoints x.
       auc_trapezoid <- trapz(simul_concentration()$times, simul_concentration()$Ct)
-      
-      # only for one dose, verification only
-      # auc_exact <- (input$dose_1 * input$ka * input$Fa)/(input$V * input$ka - input$CL)*((input$V / input$CL)-(1 / input$ka))
-      
       return(paste0(div(class = 'output_animated', span("The AUC of the drug concentration is ", round(auc_trapezoid, 0), "."))))
     })
     
-    # Compute CMAX
+    # CMAX
     output$cmax <- renderText({
       cmax <- max(simul_concentration()$Ct)
       return(paste0(div(class = 'output_animated', span("Cmax for the drug concentration is ", round(cmax, 2), "mg/L."))))

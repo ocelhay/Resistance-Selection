@@ -34,18 +34,37 @@ ui <- function(request) { fluidPage(
              tabPanel("Drug Regimen",
                       div(class = 'well2',
                           br(),
-                          sliderInputSplit("dose_1", label = span("Dose of Drug Absorbed", br(), "(At t = 0)"), l = 5, class = 'dl', min = 50, max = 1000, step = 50, value = 100, post = ' mg', ticks = FALSE),
-                          hr(),
-                          sliderInputSplit("dose_2", label = span("Dose of Drug Absorbed", br(), "(second dose)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 0, post = ' mg', ticks = FALSE),
-                          conditionalPanel(
-                            condition = "input.dose_2 > 0",
-                            sliderInputSplit(inputId = "t_dose_2", label = 'Time of Intake of second dose', l = 5, class = 'dl', min = 12, max = 192, step = 6, value = 24, post = ' h', ticks = FALSE)
+                          fluidRow(
+                            column(7, 
+                          numericInput("dose_1", label = "Dose of Drug Apsorbed (mg)", min = 1, max = 1000, value = 100, width = '200px')
+                            ),
+                          column(5, 
+                                 strong("Taken at ", em("t = 0"))
+                          )
                           ),
                           hr(),
-                          sliderInputSplit("dose_3", label = span("Dose of Drug Absorbed", br(), "(third dose)"), l = 5, class = 'dl', min = 0, max = 1000, step = 50, value = 0, post = ' mg', ticks = FALSE),
-                          conditionalPanel(
-                            condition = "input.dose_3 > 0",
-                            sliderInputSplit(inputId = "t_dose_3", label = 'Time of Intake of thirs dose', l = 5, class = 'dl', min = 12, max = 192, step = 6, value = 48, post = ' h', ticks = FALSE)
+                          fluidRow(
+                            column(7, 
+                                   numericInput("dose_2", label = "Second Dose (mg)", min = 0, max = 1000, value = 0, width = '200px')
+                            ),
+                            column(5, 
+                                   conditionalPanel(
+                                     condition = "input.dose_2 > 0",
+                                     sliderInput(inputId = "t_dose_2", label = 'Time of Intake', min = 12, max = 192, step = 6, value = 24, post = ' h', ticks = FALSE)
+                                   )
+                            )
+                          ),
+                          hr(),
+                          fluidRow(
+                            column(7, 
+                                   numericInput("dose_3", label = "Third Dose (mg)", min = 0, max = 1000, value = 0, width = '200px')
+                            ),
+                            column(5, 
+                                   conditionalPanel(
+                                     condition = "input.dose_3 > 0",
+                                     sliderInput(inputId = "t_dose_3", label = 'Time of Intake', min = 12, max = 192, step = 6, value = 24, post = ' h', ticks = FALSE)
+                                   )
+                            )
                           )
                       )
              ),
@@ -53,10 +72,11 @@ ui <- function(request) { fluidPage(
                       div(class = 'well2',
                           br(),
                           h4(icon('caret-right'), "Drug Pharmacokinetics"),
-                          sliderInputSplit("ka", label = "Absortion", l = 5, class = 'sl', min = 0, max = 100, step = 5, value = 100, post = '%', ticks = FALSE),
+                          numericInputSplit("ka", label = "Absortion rate constant (48h)", l = 5, class = 'sl', min = 0, max = 100, value = 24, width = '100px'),
+                          numericInputSplit("ke", label = "Elimination rate constant (48h)", l = 5, class = 'sl', min = 0, max = 100, value = 4, width = '100px'),
                           sliderInputSplit("Fa", label = "Bioavailability", l = 5, class = 'sl', min = 0, max = 1, step = 0.05, value = 0.8, ticks = FALSE),
-                          sliderInputSplit("V", label = "Volume of Distribution", l = 5, class = 'dl', min = 4, max = 20, step = 1, ticks = FALSE, post = ' l.', value = 6),
-                          sliderInputSplit("CL", label = "Clearance Rate", l = 5, class = 'dl', min = 0.1, max = 1, step = 0.05, ticks = FALSE, post = ' l/h', value = 0.4)
+                          sliderInputSplit("V", label = "Volume of Distribution", l = 5, class = 'dl', min = 4, max = 20, step = 1, ticks = FALSE, post = ' l.', value = 6)
+                          # sliderInputSplit("CL", label = "Clearance Rate", l = 5, class = 'dl', min = 0.1, max = 1, step = 0.05, ticks = FALSE, post = ' l/h', value = 0.4)
                       )
                       
              ),
@@ -128,12 +148,12 @@ ui <- function(request) { fluidPage(
            
            fluidRow(
              column(width = 7, 
-                    h3("Evolution of Parasites"),
+                    h3("Parasites"),
                     plotOutput("plot_2", height = "300px") %>% 
                       withSpinner(type = 7, size = 0.7),
                     br()),
              column(width = 5, 
-                    h3("Proportion of Resistant"),
+                    h3("Proportion Resistant"),
                     htmlOutput("danger_time"),
                     br(),
                     plotOutput("plot_3", height = "150px") %>% 
