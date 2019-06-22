@@ -1,7 +1,7 @@
 drug_concentration <- function(dose_1, t_dose_1 = 0, dose_2, t_dose_2, dose_3, t_dose_3, ka, ke, Fa, V, t) {
   
-  ka <- ka / 48
-  ke <- ke / 48
+  ka <- ka / 24
+  ke <- ke / 24
   
   # Ct_1 <-  (dose_1 * ka * Fa)/(V * ka - CL) * ( exp(-CL / V * (t - t_dose_1)) - exp(-ka * (t - t_dose_1)) )
   Ct_1 <-  ((Fa * dose_1 * ka) / (V * (ka - ke))) * (exp(-ke * (t - t_dose_1)) - exp(-ka * (t - t_dose_1)))

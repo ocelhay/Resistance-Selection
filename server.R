@@ -26,12 +26,7 @@ shinyServer(
       second_inf = input$second_inf,
       t_secondary = input$t_secondary)
     })
-    
-    
-    # Welcomce modal
-    # source('./www/welcome_modal.R', local = TRUE)
-    
-    
+  
     # Modal help ----
     source('./www/about_modal.R', local = TRUE)
     
@@ -167,6 +162,8 @@ shinyServer(
                msw_open = c(0, diff(msw)) == 1,
                msw_close = c(0, diff(msw)) == -1)
       
+      # x <<- simul$simul_parasites
+      
       simul$updated <- TRUE
     })
     
@@ -175,7 +172,7 @@ shinyServer(
     
     # half-life
     output$half_life <- renderText(paste0(div(class = 'output_animated', 
-                                              span("The half-life of the drug is ", round(log(2) * input$ke, 2), ' hours.'))))
+                                              span("The half-life of the drug is ", round(log(2) / (input$ke/24), 2), ' hours.'))))
     
     # AUC
     output$auc <- renderText({
@@ -190,12 +187,33 @@ shinyServer(
       return(paste0(div(class = 'output_animated', span("Cmax for the drug concentration is ", round(cmax, 2), "mg/L."))))
     })
     
-    # Compute TMAX
+    # TMAX
     output$tmax <- renderText({
       cmax <- max(simul_concentration()$Ct)
       tmax <- simul_concentration()$times[simul_concentration()$Ct == cmax]
       if(tmax > 2) return(paste0(div(class = 'output_animated', span("Tmax for the drug concentration is ", round(tmax, 1), "hours"))))
       if(tmax <= 2) return(paste0(div(class = 'output_animated', span("Tmax for the drug concentration is ", round(60*tmax, 0), "minutes"))))
+    })
+    
+    # Clearance/F
+    output$clf <- renderText({
+      return(paste0(div(class = 'output_animated', span("Oral clearance CL/F = ", round(((input$ke/24) * input$V) / input$Fa, 1)))))
+    })
+    
+    # V/F
+    output$vf <- renderText({
+      return(paste0(div(class = 'output_animated', span("Apparent oral volume of distribution V/F = ", round(input$V / input$Fa, 1))))) 
+    })
+    
+    # ka/ke per hour
+    output$ka <- renderText({
+      return(paste0(div(class = 'output_animated', 
+                        span("Absorption rate per hour - ka = ", round(input$ka/24, 3)))))
+    })
+    
+    output$ke <- renderText({
+      return(paste0(div(class = 'output_animated', 
+                        span("Elimination rate per hour - ke = ", round(input$ke/24, 3)))))
     })
     
     # Mutant Selection Window, concentrations ----
@@ -204,7 +222,7 @@ shinyServer(
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       
-      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration = ', round(conc_start_growth_r, 2), ' mg/L.')))
+      paste0(div(class = 'mpc2', span('Mutant Prevention Concentration (MPC) = ', round(conc_start_growth_r, 2), ' mg/L.')))
     })
     
     # MIC
@@ -212,7 +230,7 @@ shinyServer(
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       
-      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration = ', round(conc_start_growth_s, 2), ' mg/L.')))
+      paste0(div(class = 'mic', span('Minimum Inhibitory Concentration (MIC) = ', round(conc_start_growth_s, 2), ' mg/L.')))
     })
     
     
@@ -224,6 +242,9 @@ shinyServer(
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
       
+      # Case when msw_open is always FALSE
+      if( ! any(msw_open)) return("never attained")
+      
       t_open <- round((simul_concentration()$times[msw_open == TRUE])/24, 1)
       paste0(div(class = 'mpc', span('attained at ' , paste0(t_open, collapse = " / "), ' days from treatment onset.')))
     })
@@ -232,6 +253,10 @@ shinyServer(
       adj_growth_s <- log(input$growth_s)/48
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      
+      # Case when msw_close is always FALSE
+      if( ! any(msw_close)) return("never attained")
+      
       t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
       paste0(div(class = 'mic2', span('attained at ', paste0(t_close, collapse = " / "), ' days from treatment onset.')))
     })
@@ -240,13 +265,16 @@ shinyServer(
       adj_growth_r <- log(input$growth_r)/48
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
-      t_open <- round((simul_concentration()$times[msw_open == TRUE])/24, 1)
       
       adj_growth_s <- log(input$growth_s)/48
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
-      t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
+
+      if(! any(msw_open)) return(paste0(div(class = 'output_animated', 'There is no Mutant Selection Window.')))
+      if(! any(msw_close)) return(paste0(div(class = 'output_animated', 'There is no Mutant Selection Window.')))
       
+      t_open <- round((simul_concentration()$times[msw_open == TRUE])/24, 1)
+      t_close <- round((simul_concentration()$times[msw_close == TRUE])/24, 1)
       
       if(t_open[[1]] >= t_close[[1]]) return(paste0(div(class = 'output_animated', 'There is no Mutant Selection Window.')))
       if(length(t_open) > 1 | length(t_close) > 1) return(paste0(div(class = 'output_animated', 'There are several Mutant Selection Windows.')))
@@ -256,55 +284,57 @@ shinyServer(
     
     # Plot of Drug Concentration ----
     output$plot_1 <- renderPlot({
-      
-      # Elements for lines
-      adj_growth_r <- log(input$growth_r)/48
-      conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
-      mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
-      msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
-      
-      t_open <- tibble(times = (simul_concentration()$times[msw_open == TRUE])/24)
-      
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
-      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
-      msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      adj_growth_r <- log(input$growth_r)/48
+      conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       
-      t_close <- tibble(times = (simul_concentration()$times[msw_close == TRUE])/24)
-      
-      print(paste0("t_open = ", t_open))
-      cmax <- max(simul_concentration()$Ct)
-      
-      if(t_open[[1]] <= t_close[[1]]){
       graph_concentration <- simul_concentration() %>%
         ggplot(aes(x = times / 24, y = Ct)) +
         geom_line(size = 1, colour = "grey") +
+        geom_hline(aes(yintercept = conc_start_growth_r, col = 'MPC'), linetype = 'dashed') +
+        geom_hline(aes(yintercept = conc_start_growth_s, col = 'MIC'), linetype = 'dashed') +
         scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-        geom_hline(aes(yintercept = conc_start_growth_s, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
-        geom_hline(aes(yintercept = conc_start_growth_r, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
-        geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
-        geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
-        scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
-        geom_curve(aes(x = (t_open[[1]] + t_close[[1]])/2, y = cmax, xend = 8, yend = cmax), color = "black", arrow = arrow(type = "closed")) +
-        geom_text(aes(x =  8, y = 1.1*cmax, size = 3, label = "Mutant Selection Window")) +
+        scale_color_manual(name = NULL, values = c('MPC' = '#e41a1c', 'MIC' = '#377eb8')) +
         labs(x = "Time (days)", y = 'Concentration (mg/L)', title = NULL) +
         theme_minimal(base_size = 14) +
-        theme(legend.text = element_text(size = 13), legend.position = 'bottom')
+        theme(legend.position = 'bottom')
+      
+      # Opening MSW
+      mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
+      msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
+      
+      if(any(msw_open)) {
+        t_open <- tibble(times = (simul_concentration()$times[msw_open == TRUE])/24)
+        
+        graph_concentration <- graph_concentration +
+          geom_vline(data = t_open, aes(xintercept = times, col = 'MPC'), linetype = 'dashed')
       }
       
-      if(t_open[[1]] > t_close[[1]]){
-        graph_concentration <- simul_concentration() %>%
-          ggplot(aes(x = times / 24, y = Ct)) +
-          geom_line(size = 1, colour = "grey") +
-          scale_x_continuous(breaks = 0:10, minor_breaks = 0.5*1:10) +
-          geom_hline(aes(yintercept = conc_start_growth_s, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
-          geom_hline(aes(yintercept = conc_start_growth_r, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
-          geom_vline(data = t_open, aes(xintercept = times, col = 'Mutant Prevention Concentration'), linetype = 'dashed') +
-          geom_vline(data = t_close, aes(xintercept = times, col = 'Minimum Inhibitory Concentration'), linetype = 'dashed') +
-          scale_color_manual(name = NULL, values = c(`Mutant Prevention Concentration` = '#e41a1c', `Minimum Inhibitory Concentration` = '#377eb8')) +
-          labs(x = "Time (days)", y = 'Concentration (mg/L)', title = NULL) +
-          theme_minimal(base_size = 14) +
-          theme(legend.text = element_text(size = 13), legend.position = 'bottom')
+      # Closing MSW
+      mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
+      msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
+      
+      if(any(msw_close)) {
+        t_close <- tibble(times = (simul_concentration()$times[msw_close == TRUE])/24)
+        
+        graph_concentration <- graph_concentration +
+          geom_vline(data = t_close, aes(xintercept = times, col = 'MIC'), linetype = 'dashed')
+      }
+      
+      # if(any(msw_open) & any(msw_close)){
+      
+      if(sum(msw_open) == 1 & sum(msw_close) == 1){
+        # t_open <<- t_open
+        # t_close <<- t_close
+        
+        if(t_open[[1,1]] <= t_close[[1,1]]) {
+          cmax <- max(simul_concentration()$Ct)
+          
+          graph_concentration <- graph_concentration +
+            geom_curve(aes(x = (t_open[[1,1]] + t_close[[1,1]])/2, y = cmax, xend = 8, yend = cmax), color = "black", arrow = arrow(type = "closed")) +
+            geom_text(aes(x =  8, y = 1.1*cmax, size = 3, label = "Mutant Selection Window"))
+        }
       }
       
       return(graph_concentration)
@@ -332,6 +362,7 @@ shinyServer(
       ggplot(data = simul$simul_parasites, aes(x = time / 24)) +
         geom_line(aes(y = S, colour = 'Sensitive Parasites'), size = 1.2) +
         geom_line(aes(y = R, colour = 'Resistant Parasites'), size = 1.2) +
+        geom_hline(yintercept = 10^8, col = 'black', linetype = 'dashed') +
         scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                       labels = trans_format("log10", math_format(10^.x)),
                       limits = c(1, 10^12)) +

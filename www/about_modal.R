@@ -8,10 +8,8 @@ observeEvent(input$about_model,  showModal(modal_about_1))
 
 modal_about_1 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
-  
-  
-  p('Drug resistance is the reduction in effectiveness of a medication such as an antimicrobial or an antineoplastic in treating a disease or condition. Our simple mathematica model simulates the co-evolution of sensitive and resistant parasites under a drug regimen.'),
-  img(src = "./model.png", width = '800px'),
+
+  img(src = "./about_modal/modal_1.png", width = '800px'),
   
   footer = fluidRow(
       column(3, HTML('')),
@@ -32,7 +30,7 @@ observeEvent(input$close_ma1, removeModal())
 modal_about_2 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
-  img(src = "./drug_concentration.png", width = '800px'),
+  img(src = "./about_modal/modal_2.png", width = '800px'),
   
   footer = fluidRow(
     column(3, HTML('')),
@@ -54,7 +52,7 @@ observeEvent(input$close_ma2, removeModal())
 modal_about_3 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
-  img(src = "./msw.png", width = '800px'),
+  img(src = "./about_modal/modal_3.png", width = '800px'),
   
   footer = fluidRow(
     column(3, HTML('')),
@@ -76,7 +74,7 @@ observeEvent(input$close_ma3, removeModal())
 modal_about_4 <- modalDialog(
   size = "l", align= "center", easyClose = TRUE, fade = FALSE,
   
-  HTML('We will provice more information on the model here.'),
+  img(src = "./about_modal/modal_4.png", width = '800px'),
   
     footer = fluidRow(
       column(3, HTML('')),
