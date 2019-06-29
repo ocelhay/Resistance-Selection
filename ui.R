@@ -27,7 +27,7 @@ ui <- function(request) { fluidPage(
   # Sidebar with inputs ----
   
   fluidRow(
-    column(width = 5,
+    column(width = 4,
            h3("Parameters"),
            tabsetPanel(
              # ----
@@ -39,7 +39,7 @@ ui <- function(request) { fluidPage(
                           numericInput("dose_1", label = "Dose of Drug Apsorbed (mg)", min = 1, max = 1000, value = 80, width = '200px')
                             ),
                           column(5, 
-                                 strong("Taken at ", em("t = 0"))
+                                 strong("Apsorbed at ", em("t = 0"))
                           )
                           ),
                           hr(),
@@ -100,8 +100,8 @@ ui <- function(request) { fluidPage(
                       div(class = 'well2',
                           br(),
                           h4(icon('caret-right'), "Multiplication Rate (per 48h cycle)"),
-                          sliderInputSplit(inputId = "growth_s", label = "Sensitive", min = 0, max = 15, value = 10, ticks = FALSE),
-                          sliderInputSplit(inputId = "growth_r", label = "Resistant", min = 0, max = 15, value = 9, ticks = FALSE),
+                          sliderInputSplit(inputId = "growth_s", label = "Sensitive", min = 1, max = 15, value = 10, ticks = FALSE),
+                          sliderInputSplit(inputId = "growth_r", label = "Resistant", min = 1, max = 15, value = 9, ticks = FALSE),
                           htmlOutput('message_rate'),
                           
                           h4(icon('caret-right'), "Primary Infection — t = 0"),
@@ -134,7 +134,7 @@ ui <- function(request) { fluidPage(
     ),
     
     # Show a plot of the generated distribution
-    column(width = 7,
+    column(width = 8,
            fluidRow(
              column(width = 7, 
                     h3("Drug Concentration"),

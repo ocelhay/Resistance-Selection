@@ -38,12 +38,16 @@ shinyServer(
     })
     
     output$message_EC50 <- renderText({
+      req(input$EC50_s, input$EC50_r)
       if(input$EC50_s > input$EC50_r) return(paste0(div(class = 'alertbox', icon('exclamation-triangle'), 
                                                         'It is expected that EC50 for resistant parasites is greater than EC50 for sensitive parasites.')))
       if(input$EC50_s <= input$EC50_r) return('')
     })
     
-    output$time_hour <- renderText({paste0(input$t_secondary, ' hours = ', round(input$t_secondary/24, 1), ' days.')})
+    output$time_hour <- renderText({
+      req(input$t_secondary)
+      paste0(input$t_secondary, ' hours = ', round(input$t_secondary/24, 1), ' days.')
+    })
     
     
     # Reactive to save all results ----
@@ -54,6 +58,8 @@ shinyServer(
     
     # Simulate drug concentration over time ----
     simul_concentration <- reactive({
+      req(input$dose_1, input$dose_2, input$dose_3, input$ka, input$ke)
+      
       tibble(times = c(seq(0, 1.99, by = 0.01), 2:240),
              Ct = drug_concentration(dose_1 = input$dose_1,
                                      t_dose_1 = 0,
@@ -72,6 +78,8 @@ shinyServer(
     
     # Simulate parasites over time ----
     observe({
+      req(input$dose_1, input$dose_2, input$dose_3, input$ka, input$ke, input$EC50_s, input$EC50_r)
+      
       list_parameters <- list(
         growth_s = input$growth_s,
         growth_r = input$growth_r,
@@ -171,11 +179,16 @@ shinyServer(
     # Several PK parameters ----
     
     # half-life
-    output$half_life <- renderText(paste0(div(class = 'output_animated', 
-                                              span("The half-life of the drug is ", round(log(2) / (input$ke/24), 2), ' hours.'))))
+    output$half_life <- renderText({
+      req(input$ke)
+      paste0(div(class = 'output_animated', 
+                                              span("The half-life of the drug is ", round(log(2) / (input$ke/24), 2), ' hours.')))
+    })
     
     # AUC
     output$auc <- renderText({
+      req(simul_concentration())
+      
       # Approximation for integrating the function using the trapezoidal rule with basepoints x.
       auc_trapezoid <- trapz(simul_concentration()$times, simul_concentration()$Ct)
       return(paste0(div(class = 'output_animated', span("The AUC of the drug concentration is ", round(auc_trapezoid, 0), "."))))
@@ -183,12 +196,16 @@ shinyServer(
     
     # CMAX
     output$cmax <- renderText({
+      req(simul_concentration())
+      
       cmax <- max(simul_concentration()$Ct)
       return(paste0(div(class = 'output_animated', span("Cmax for the drug concentration is ", round(cmax, 2), "mg/L."))))
     })
     
     # TMAX
     output$tmax <- renderText({
+      req(simul_concentration())
+      
       cmax <- max(simul_concentration()$Ct)
       tmax <- simul_concentration()$times[simul_concentration()$Ct == cmax]
       if(tmax > 2) return(paste0(div(class = 'output_animated', span("Tmax for the drug concentration is ", round(tmax, 1), "hours"))))
@@ -197,6 +214,8 @@ shinyServer(
     
     # Clearance/F
     output$clf <- renderText({
+      req(input$ke)
+      
       return(paste0(div(class = 'output_animated', span("Oral clearance CL/F = ", round(((input$ke/24) * input$V) / input$Fa, 1)))))
     })
     
@@ -207,11 +226,15 @@ shinyServer(
     
     # ka/ke per hour
     output$ka <- renderText({
+      req(input$ka)
+      
       return(paste0(div(class = 'output_animated', 
                         span("Absorption rate per hour - ka = ", round(input$ka/24, 3)))))
     })
     
     output$ke <- renderText({
+      req(input$ke)
+      
       return(paste0(div(class = 'output_animated', 
                         span("Elimination rate per hour - ke = ", round(input$ke/24, 3)))))
     })
@@ -219,6 +242,8 @@ shinyServer(
     # Mutant Selection Window, concentrations ----
     # MPC
     output$mpc <- renderText({
+      req(input$EC50_r)
+      
       adj_growth_r <- log(input$growth_r)/48
       conc_start_growth_r <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       
@@ -227,6 +252,8 @@ shinyServer(
     
     # MIC
     output$mic <- renderText({
+      req(input$EC50_s)
+      
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       
@@ -238,6 +265,8 @@ shinyServer(
     
     # Mutant Selection Window, time ----
     output$mpc_time <- renderText({
+      req(input$EC50_r, simul_concentration())
+      
       adj_growth_r <- log(input$growth_r)/48
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
@@ -250,6 +279,8 @@ shinyServer(
     })
     
     output$mic_time <- renderText({
+      req(input$EC50_s, simul_concentration())
+      
       adj_growth_s <- log(input$growth_s)/48
       mic <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       msw_close <-  c(0, diff(simul_concentration()$Ct >= mic)) == -1
@@ -262,6 +293,8 @@ shinyServer(
     })
     
     output$window <- renderText({
+      req(input$EC50_r, input$EC50_s, simul_concentration())
+      
       adj_growth_r <- log(input$growth_r)/48
       mpc <- (-(adj_growth_r / input$k1) * (input$EC50_r ^ input$n))/(1 + (adj_growth_r / input$k1))
       msw_open <-  c(0, diff(simul_concentration()$Ct <= mpc)) == 1
@@ -284,6 +317,8 @@ shinyServer(
     
     # Plot of Drug Concentration ----
     output$plot_1 <- renderPlot({
+      req(input$EC50_r, input$EC50_s, simul_concentration())
+      
       adj_growth_s <- log(input$growth_s)/48
       conc_start_growth_s <- (-(adj_growth_s / input$k1) * (input$EC50_s ^ input$n))/(1 + (adj_growth_s / input$k1))
       adj_growth_r <- log(input$growth_r)/48
@@ -344,6 +379,7 @@ shinyServer(
     output$plot_2 <- renderPlot({
       
       req(simul$updated)
+      req(input$dose_1, input$dose_2, input$dose_3, input$ka, input$ke, input$EC50_r, input$EC50_s)
       
       # Elements for lines
       adj_growth_r <- log(input$growth_r)/48
@@ -378,6 +414,7 @@ shinyServer(
     output$plot_3 <- renderPlot({
       
       req(simul$updated)
+      req(input$dose_1, input$dose_2, input$dose_3, input$ka, input$ke, input$EC50_r, input$EC50_s)
       
       ggplot(data = simul$simul_parasites, aes(x = time / 24)) +
         scale_y_continuous(limits = c(0, 100)) +
